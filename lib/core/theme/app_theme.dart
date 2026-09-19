@@ -141,23 +141,16 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      canvasColor: AppColors.surface,
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceElevated,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
-        selectedIconTheme: const IconThemeData(
-          size: 26,
-          color: AppColors.primary,
-        ),
-        unselectedIconTheme: const IconThemeData(
-          size: 24,
-          color: AppColors.textSecondary,
-        ),
+        selectedIconTheme: const IconThemeData(size: 28),
+        unselectedIconTheme: const IconThemeData(size: 26),
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        elevation: 0,
+        elevation: 16,
         selectedLabelStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 12,
