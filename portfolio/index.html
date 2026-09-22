@@ -23,7 +23,7 @@
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
         <li><a href="#stack">Stack</a></li>
-        <li><a href="#toolkit">Toolkit</a></li>
+        <li><a href="#summary">Summary</a></li>
       </ul>
       <button class="nav-cta" id="open-modal">✉ Hire Me</button>
     </div>
@@ -304,59 +304,46 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </section>
 
-  <!-- Recruiter Toolkit -->
-  <section id="toolkit" class="section">
+  <!-- Executive Summary & Engineering Impact CTA -->
+  <section id="summary" class="section">
     <div class="container">
-      <div class="section-head">
-        <div class="section-label" style="color: var(--purple);">Recruiter Toolkit</div>
-        <h2 class="section-title">Copy-Ready Resume & Interview Snippets</h2>
-        <p class="section-desc">Google XYZ format bullets. Click to copy directly into ATS.</p>
-      </div>
-
-      <div class="toolkit-grid">
-        <div class="toolkit-card">
-          <div class="toolkit-label">
-            <span>🤖 AI / RAG Engineer</span>
-            <span class="type-tag">XYZ Format</span>
-          </div>
-          <div class="toolkit-body" id="copy-ai">Architected a two-stage RAG pipeline on FastAPI, Qdrant Cloud (HNSW), and Cohere rerank-v3.5, reducing context token overhead by 85% while achieving sub-15ms retrieval latency and 99.8% precision.
-
-Eliminated 100% of mathematical hallucinations in LLM workout generation by decoupling quantitative volume analytics into a deterministic Python engine that enforces physical ground truth before invoking Gemini 2.5 Flash.</div>
-          <button class="copy-btn" data-target="copy-ai">📋 Copy Bullets</button>
+      <div class="cta-banner">
+        <div class="cta-header">
+          <div class="section-label" style="color: var(--accent);">Engineering Impact</div>
+          <h2 class="cta-title">Engineering Reliable Intelligence at Production Scale</h2>
+          <p class="cta-desc">
+            Modern AI products cannot rely on probabilistic models alone. PulseFit AI demonstrates my engineering philosophy: decoupling deterministic arithmetic, enforcing strict physical ground truth, and augmenting LLMs with sub-15ms vector recall and cross-encoder precision.
+          </p>
         </div>
 
-        <div class="toolkit-card">
-          <div class="toolkit-label">
-            <span>📱 Full-Stack Engineer</span>
-            <span class="type-tag">XYZ Format</span>
+        <div class="cta-grid">
+          <div class="cta-card">
+            <div class="cta-card-icon">⚡</div>
+            <div class="cta-card-title">Production Latency</div>
+            <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant Cloud vector recall, and Gemini Flash inference.</p>
           </div>
-          <div class="toolkit-body" id="copy-fs">Engineered a local-first, offline-resilient fitness web app in Flutter using the CanvasKit engine and HTML5 localStorage, achieving 0ms perceived logging latency and 60fps UI under degraded gym networks.
-
-Integrated Supabase PostgreSQL with asynchronous background sync and Anonymous JWT auth, enabling zero-friction onboarding with full cloud state persistence.</div>
-          <button class="copy-btn" data-target="copy-fs">📋 Copy Bullets</button>
+          <div class="cta-card">
+            <div class="cta-card-icon">🛡️</div>
+            <div class="cta-card-title">Zero Math Hallucination</div>
+            <p class="cta-card-text">Total tonnage and hypertrophy splits computed via pure deterministic Python before injecting ground truth into the generation prompt.</p>
+          </div>
+          <div class="cta-card">
+            <div class="cta-card-icon">📱</div>
+            <div class="cta-card-title">Local-First Architecture</div>
+            <p class="cta-card-text">Instant 0ms UI updates via browser localStorage and optimistic UI patterns, backed by asynchronous Supabase PostgreSQL synchronization.</p>
+          </div>
         </div>
 
-        <div class="toolkit-card">
-          <div class="toolkit-label">
-            <span>🎙️ Elevator Pitch</span>
-            <span class="type-tag">30 Seconds</span>
+        <div class="cta-action-box">
+          <div class="cta-action-text">
+            <h3>Interested in discussing engineering roles or collaboration?</h3>
+            <p>Open to Full-Stack, AI Systems, and Mobile Engineering positions worldwide.</p>
           </div>
-          <div class="toolkit-body" id="copy-pitch">"I built PulseFit AI, a local-first fitness app powered by a two-stage RAG pipeline. It combines deterministic Python analytics with evidence-based retrieval — computing volume across 6 muscle groups, retrieving hypertrophy principles from Qdrant Cloud, reranking with Cohere's cross-encoder, and prompting Gemini to produce mathematically grounded recommendations with 0% numerical errors."</div>
-          <button class="copy-btn" data-target="copy-pitch">📋 Copy Pitch</button>
-        </div>
-
-        <div class="toolkit-card">
-          <div class="toolkit-label">
-            <span>📬 Contact & Links</span>
-            <span class="type-tag">Quick Info</span>
+          <div class="cta-action-btns">
+            <button class="btn btn-fill" id="open-modal-summary">✉️ Let's Connect</button>
+            <a href="https://github.com/joelaah/fitness_app" target="_blank" class="btn btn-outline">Client Repo</a>
+            <a href="https://github.com/joelaah/fitness-rag-api" target="_blank" class="btn btn-outline">Backend Repo</a>
           </div>
-          <div class="toolkit-body" id="copy-links">Joel Pachuau
-joelapachuau64@gmail.com
-GitHub: github.com/joelaah
-Demo: joelaah.github.io/fitness_app/
-Roles: Full-Stack, AI/ML, Backend Engineer
-Availability: Immediate</div>
-          <button class="copy-btn" data-target="copy-links">📋 Copy Info</button>
         </div>
       </div>
     </div>
