@@ -432,13 +432,16 @@ function initCopyButtons() {
 function initModal() {
   const overlay = document.getElementById('modal');
   const closeBtn = document.getElementById('modal-close');
-  const openBtn = document.getElementById('open-modal');
+  const openBtns = [
+    document.getElementById('open-modal'),
+    document.getElementById('open-modal-summary')
+  ].filter(Boolean);
   if (!overlay) return;
 
   function open() { overlay.classList.add('open'); }
   function close() { overlay.classList.remove('open'); }
 
-  if (openBtn) openBtn.addEventListener('click', open);
+  openBtns.forEach(btn => btn.addEventListener('click', open));
   if (closeBtn) closeBtn.addEventListener('click', close);
 
   // Click outside to close
