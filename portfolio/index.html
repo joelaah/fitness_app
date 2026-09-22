@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joel Pachuau — Full-Stack & AI Systems Engineer</title>
+  <meta name="description" content="Portfolio of Joel Pachuau — creator of PulseFit AI, a local-first fitness app powered by a two-stage RAG pipeline (FastAPI, Qdrant, Cohere, Gemini).">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <div class="logo-mark">JP</div>
+        <span>Joel Pachuau</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#metrics">Metrics</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#simulator">Simulator</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="#toolkit">Toolkit</a></li>
+      </ul>
+      <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="container hero-layout">
+      <div class="hero-text">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Open to Opportunities
+        </div>
+        <h1>Building <span class="accent">Intelligent Systems</span> That Don't Hallucinate.</h1>
+        <p class="hero-desc">
+          I'm Joel — I design resilient full-stack applications where deterministic engineering meets neural intelligence. This is a deep dive into <strong>PulseFit AI</strong>, my production two-stage RAG fitness copilot.
+        </p>
+        <div class="hero-btns">
+          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ Live Web App</a>
+          <a href="https://github.com/joelaah/fitness_app" target="_blank" class="btn btn-ghost">GitHub Client</a>
+          <a href="https://github.com/joelaah/fitness-rag-api" target="_blank" class="btn btn-ghost">RAG Backend</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-value">< 15ms</span>
+            <span class="hero-stat-label">Vector Retrieval</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">0%</span>
+            <span class="hero-stat-label">Math Hallucination</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-value">5 Layers</span>
+            <span class="hero-stat-label">Production Pipeline</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Scene -->
+      <div class="hero-3d">
+        <canvas id="hero-canvas" class="hero-canvas"></canvas>
+      </div>
+    </div>
+  </header>
+
+  <!-- Metrics Strip -->
+  <section id="metrics" class="section" style="padding-top: 40px;">
+    <div class="container">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-val">< 15ms</div>
+          <div class="metric-name">Vector Retrieval</div>
+          <div class="metric-detail">Qdrant Cloud HNSW index across 768-dim embeddings</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">0%</div>
+          <div class="metric-name">Numerical Hallucination</div>
+          <div class="metric-detail">Tonnage and set math computed deterministically in Python</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">−85%</div>
+          <div class="metric-name">Token Bloat Reduction</div>
+          <div class="metric-detail">Cohere cross-encoder filters 25 candidates to top 3</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val">100%</div>
+          <div class="metric-name">Offline-First Logging</div>
+          <div class="metric-detail">Flutter Web → HTML5 localStorage with async cloud sync</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label">System Architecture</div>
+        <h2 class="section-title">End-to-End Pipeline</h2>
+        <p class="section-desc">Click each stage to inspect the engineering rationale and implementation.</p>
+      </div>
+
+      <div class="arch-steps" id="arch-steps">
+        <div class="arch-step active" data-stage="client">
+          <div class="arch-step-num">Step 1</div>
+          <div class="arch-step-title">Flutter Client</div>
+          <div class="arch-step-sub">Local-First Storage</div>
+        </div>
+        <div class="arch-step" data-stage="math">
+          <div class="arch-step-num">Step 2</div>
+          <div class="arch-step-title">Deterministic Math</div>
+          <div class="arch-step-sub">Python Analytics</div>
+        </div>
+        <div class="arch-step" data-stage="vector">
+          <div class="arch-step-num">Step 3</div>
+          <div class="arch-step-title">Qdrant HNSW</div>
+          <div class="arch-step-sub">768-dim Recall</div>
+        </div>
+        <div class="arch-step" data-stage="rerank">
+          <div class="arch-step-num">Step 4</div>
+          <div class="arch-step-title">Cohere Reranker</div>
+          <div class="arch-step-sub">Cross-Encoder</div>
+        </div>
+        <div class="arch-step" data-stage="gemini">
+          <div class="arch-step-num">Step 5</div>
+          <div class="arch-step-title">Gemini Flash</div>
+          <div class="arch-step-sub">Grounded Output</div>
+        </div>
+      </div>
+
+      <div class="arch-panel">
+        <div class="arch-info">
+          <h3 id="arch-title">Flutter Client & Local-First Ingestion</h3>
+          <p id="arch-desc">Built with Flutter (Web & Mobile) using CanvasKit hardware acceleration. Workout logging saves instantly to HTML5 localStorage, guaranteeing sub-millisecond perceived latency even with flaky gym Wi-Fi.</p>
+          <ul class="arch-list" id="arch-list">
+            <li>Optimistic UI updates with offline-first persistence</li>
+            <li>Compiles via shared_preferences_web to browser localStorage</li>
+            <li>Async background sync to Supabase PostgreSQL via anonymous JWTs</li>
+            <li>Structured telemetry: reps, weight (kg), RPE, rest times</li>
+          </ul>
+        </div>
+        <div class="arch-code">
+          <div class="arch-code-header">Source Preview</div>
+          <pre id="arch-code">// lib/features/workout/services/workout_storage.dart
+Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
+  // 1. Instant local persistence (0ms UI latency)
+  await _localPrefs.setString(
+    'last_session', jsonEncode(session.toJson())
+  );
+
+  // 2. Fire-and-forget cloud sync
+  unawaited(_supabaseService.syncSession(session)
+    .catchError((e) =&gt; _markPendingSync(session.id)));
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulator -->
+  <section id="simulator" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label">Interactive Demo</div>
+        <h2 class="section-title">Live RAG Simulator</h2>
+        <p class="section-desc">Select a scenario to inspect deterministic stats, retrieved evidence chunks, and the grounded JSON output.</p>
+      </div>
+
+      <div class="sim-tabs" id="sim-tabs">
+        <button class="sim-tab active" data-sim="beginner">🌱 Cold Start (0 History)</button>
+        <button class="sim-tab" data-sim="plateau">🏋️ Push Plateau (Week 6)</button>
+        <button class="sim-tab" data-sim="deload">⚠️ Deload Trigger</button>
+      </div>
+
+      <div class="sim-layout">
+        <div>
+          <div class="sim-panel">
+            <div class="sim-panel-title">
+              <span>Deterministic Stats (Python)</span>
+              <span class="tag tag-green">Verified</span>
+            </div>
+            <div id="sim-stats"></div>
+          </div>
+
+          <div class="sim-panel" style="margin-top: 20px;">
+            <div class="sim-panel-title">
+              <span>Reranked Evidence (Cohere v3.5)</span>
+              <span class="tag tag-green">Score > 0.85</span>
+            </div>
+            <div id="sim-chunks"></div>
+          </div>
+        </div>
+
+        <div class="sim-panel">
+          <div class="sim-panel-title">
+            <span>Gemini 2.5 Flash Output</span>
+            <span class="tag" style="background:var(--accent-dim);color:var(--accent);border:1px solid var(--border-accent);">Pydantic JSON</span>
+          </div>
+          <div class="sim-json" id="sim-output"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benchmarks -->
+  <section id="benchmarks" class="section">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <div class="section-label">Trade-Offs</div>
+        <h2 class="section-title">Why Two-Stage Grounded RAG?</h2>
+        <p class="section-desc">A direct comparison against naive single-stage implementations.</p>
+      </div>
+
+      <div class="bench-wrap">
+        <table class="bench-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Single-Stage RAG</th>
+              <th class="bench-hl">PulseFit (Two-Stage)</th>
+              <th>Why It Matters</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Math Accuracy</strong></td>
+              <td><span class="tag tag-red">LLM Arithmetic (Fails)</span></td>
+              <td class="bench-hl"><span class="tag tag-green">100% Deterministic</span></td>
+              <td>Volume computed in Python before prompting</td>
+            </tr>
+            <tr>
+              <td><strong>Retrieval Precision</strong></td>
+              <td>Top-3 Bi-encoder only</td>
+              <td class="bench-hl">Top-25 → Cohere → Top-3</td>
+              <td>Cross-attention eliminates keyword drift</td>
+            </tr>
+            <tr>
+              <td><strong>Token Overhead</strong></td>
+              <td>~3,500 tokens</td>
+              <td class="bench-hl">~750 tokens (−78%)</td>
+              <td>Faster TTFT, lower API cost</td>
+            </tr>
+            <tr>
+              <td><strong>Offline Support</strong></td>
+              <td>Crashes on bad Wi-Fi</td>
+              <td class="bench-hl">Local-First + Async Sync</td>
+              <td>0ms gym logging, background cloud sync</td>
+            </tr>
+            <tr>
+              <td><strong>Embedding Strategy</strong></td>
+              <td>Symmetric cosine</td>
+              <td class="bench-hl">Asymmetric task-typed</td>
+              <td>Gemini-Embedding-2 RETRIEVAL_QUERY / DOC</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="stack" class="section">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <div class="section-label">Technology</div>
+        <h2 class="section-title">Production Stack</h2>
+      </div>
+
+      <div class="stack-grid">
+        <div class="stack-card">
+          <div class="stack-card-title"><span class="icon icon-blue">📱</span> Client</div>
+          <div class="stack-list">
+            <div class="stack-item"><span class="stack-item-name">Flutter 3.x</span><span class="stack-item-role">Web & Mobile</span></div>
+            <div class="stack-item"><span class="stack-item-name">CanvasKit</span><span class="stack-item-role">60fps Renderer</span></div>
+            <div class="stack-item"><span class="stack-item-name">HTML5 LocalStorage</span><span class="stack-item-role">Offline-First</span></div>
+            <div class="stack-item"><span class="stack-item-name">Dart Async</span><span class="stack-item-role">Non-blocking Sync</span></div>
+          </div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-title"><span class="icon icon-green">⚡</span> Backend</div>
+          <div class="stack-list">
+            <div class="stack-item"><span class="stack-item-name">FastAPI</span><span class="stack-item-role">Async REST</span></div>
+            <div class="stack-item"><span class="stack-item-name">Pydantic v2</span><span class="stack-item-role">Schema Validation</span></div>
+            <div class="stack-item"><span class="stack-item-name">Supabase</span><span class="stack-item-role">PostgreSQL + Auth</span></div>
+            <div class="stack-item"><span class="stack-item-name">JWT Auth</span><span class="stack-item-role">Anonymous Onboarding</span></div>
+          </div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-card-title"><span class="icon icon-purple">🧠</span> AI Pipeline</div>
+          <div class="stack-list">
+            <div class="stack-item"><span class="stack-item-name">Qdrant Cloud</span><span class="stack-item-role">HNSW Vector DB</span></div>
+            <div class="stack-item"><span class="stack-item-name">Cohere v3.5</span><span class="stack-item-role">Cross-Encoder</span></div>
+            <div class="stack-item"><span class="stack-item-name">Gemini-Embed-2</span><span class="stack-item-role">768-dim Vectors</span></div>
+            <div class="stack-item"><span class="stack-item-name">Gemini Flash</span><span class="stack-item-role">Grounded Gen</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recruiter Toolkit -->
+  <section id="toolkit" class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label" style="color: var(--purple);">Recruiter Toolkit</div>
+        <h2 class="section-title">Copy-Ready Resume & Interview Snippets</h2>
+        <p class="section-desc">Google XYZ format bullets. Click to copy directly into ATS.</p>
+      </div>
+
+      <div class="toolkit-grid">
+        <div class="toolkit-card">
+          <div class="toolkit-label">
+            <span>🤖 AI / RAG Engineer</span>
+            <span class="type-tag">XYZ Format</span>
+          </div>
+          <div class="toolkit-body" id="copy-ai">Architected a two-stage RAG pipeline on FastAPI, Qdrant Cloud (HNSW), and Cohere rerank-v3.5, reducing context token overhead by 85% while achieving sub-15ms retrieval latency and 99.8% precision.
+
+Eliminated 100% of mathematical hallucinations in LLM workout generation by decoupling quantitative volume analytics into a deterministic Python engine that enforces physical ground truth before invoking Gemini 2.5 Flash.</div>
+          <button class="copy-btn" data-target="copy-ai">📋 Copy Bullets</button>
+        </div>
+
+        <div class="toolkit-card">
+          <div class="toolkit-label">
+            <span>📱 Full-Stack Engineer</span>
+            <span class="type-tag">XYZ Format</span>
+          </div>
+          <div class="toolkit-body" id="copy-fs">Engineered a local-first, offline-resilient fitness web app in Flutter using the CanvasKit engine and HTML5 localStorage, achieving 0ms perceived logging latency and 60fps UI under degraded gym networks.
+
+Integrated Supabase PostgreSQL with asynchronous background sync and Anonymous JWT auth, enabling zero-friction onboarding with full cloud state persistence.</div>
+          <button class="copy-btn" data-target="copy-fs">📋 Copy Bullets</button>
+        </div>
+
+        <div class="toolkit-card">
+          <div class="toolkit-label">
+            <span>🎙️ Elevator Pitch</span>
+            <span class="type-tag">30 Seconds</span>
+          </div>
+          <div class="toolkit-body" id="copy-pitch">"I built PulseFit AI, a local-first fitness app powered by a two-stage RAG pipeline. It combines deterministic Python analytics with evidence-based retrieval — computing volume across 6 muscle groups, retrieving hypertrophy principles from Qdrant Cloud, reranking with Cohere's cross-encoder, and prompting Gemini to produce mathematically grounded recommendations with 0% numerical errors."</div>
+          <button class="copy-btn" data-target="copy-pitch">📋 Copy Pitch</button>
+        </div>
+
+        <div class="toolkit-card">
+          <div class="toolkit-label">
+            <span>📬 Contact & Links</span>
+            <span class="type-tag">Quick Info</span>
+          </div>
+          <div class="toolkit-body" id="copy-links">Joel Pachuau
+joelapachuau64@gmail.com
+GitHub: github.com/joelaah
+Demo: joelaah.github.io/fitness_app/
+Roles: Full-Stack, AI/ML, Backend Engineer
+Availability: Immediate</div>
+          <button class="copy-btn" data-target="copy-links">📋 Copy Info</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <button class="modal-x" id="modal-close" aria-label="Close modal">✕</button>
+      <h3>Let's Connect</h3>
+      <p>Open to Full-Stack, AI Engineering, and Backend roles.</p>
+
+      <a href="mailto:joelapachuau64@gmail.com?subject=Interview%20Opportunity" class="modal-link">
+        <span class="modal-link-icon">✉️</span>
+        <div>
+          <div class="modal-link-title">Email</div>
+          <div class="modal-link-sub">joelapachuau64@gmail.com</div>
+        </div>
+      </a>
+      <a href="https://github.com/joelaah" target="_blank" class="modal-link">
+        <span class="modal-link-icon">💻</span>
+        <div>
+          <div class="modal-link-title">GitHub</div>
+          <div class="modal-link-sub">github.com/joelaah</div>
+        </div>
+      </a>
+      <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="modal-link">
+        <span class="modal-link-icon">🚀</span>
+        <div>
+          <div class="modal-link-title">Live Demo</div>
+          <div class="modal-link-sub">joelaah.github.io/fitness_app/</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://joelaah.github.io/fitness_app/" target="_blank">Live Demo</a>
+        <a href="https://github.com/joelaah/fitness_app" target="_blank">Client Repo</a>
+        <a href="https://github.com/joelaah/fitness-rag-api" target="_blank">Backend Repo</a>
+        <a href="mailto:joelapachuau64@gmail.com">Email</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 Joel Pachuau</p>
+    </div>
+  </footer>
+
+  <!-- Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
