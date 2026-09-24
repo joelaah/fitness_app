@@ -48,3 +48,21 @@ app.*.map.json
 exercises-dataset/
 build_log.txt
 graphify-out/
+
+# Study guides, interview preparation & recruiter notes
+study/
+MASTER_INTERVIEW_STUDY_GUIDE.md
+INTERVIEW_PREP_RAG_ARCHITECTURE.md
+RECRUITER_PORTFOLIO_CASE_STUDY.md
+*.wav
+*.mp3
+
+# Local AI assistant configurations
+.claude/
+
+# Local portfolio screenshots & scratch resume
+portfolio/*.png
+portfolio/resume.html
+
+
+
