@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joel Pachuau — Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { margin: 0.5in; size: letter; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 0.5in 0.6in;
+      max-width: 8.5in;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header { margin-bottom: 16px; border-bottom: 2px solid #111; padding-bottom: 12px; }
+    .name { font-size: 22pt; font-weight: 700; letter-spacing: -0.5px; color: #000; }
+    .subtitle { font-size: 10.5pt; font-weight: 500; color: #444; margin: 2px 0 6px 0; }
+    .contact { font-size: 9pt; color: #555; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+    .contact a { color: #1a5cb0; text-decoration: none; }
+    .contact a:hover { text-decoration: underline; }
+
+    /* Sections */
+    .section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 9.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #000;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 3px;
+      margin-bottom: 8px;
+    }
+
+    /* Skills */
+    .skills-grid { display: grid; grid-template-columns: 120px 1fr; gap: 3px 12px; font-size: 10pt; }
+    .skill-cat { font-weight: 600; color: #333; }
+    .skill-val { color: #444; }
+
+    /* Projects */
+    .project { margin-bottom: 12px; }
+    .project-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .project-name { font-weight: 700; font-size: 10.5pt; color: #000; }
+    .project-tech { font-size: 9pt; color: #666; font-style: italic; }
+    .project-links { font-size: 9pt; color: #1a5cb0; margin: 1px 0 3px 0; }
+    .project-links a { color: #1a5cb0; text-decoration: none; }
+    .project ul { padding-left: 18px; }
+    .project li { margin-bottom: 2px; font-size: 10pt; color: #333; }
+    .project li strong { color: #000; }
+
+    /* Education */
+    .edu-item { margin-bottom: 4px; font-size: 10pt; }
+    .edu-name { font-weight: 600; color: #222; }
+    .edu-detail { color: #555; }
+
+    /* Print */
+    @media print {
+      body { padding: 0; }
+      .contact a { color: #000; }
+      .project-links a { color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="name">Joel Pachuau</div>
+    <div class="subtitle">Full-Stack & AI Systems Engineer</div>
+    <div class="contact">
+      <span>India (GMT+5:30)</span>
+      <a href="mailto:joelapachuau64@gmail.com">joelapachuau64@gmail.com</a>
+      <span>+91 9366797268</span>
+      <a href="https://github.com/joelaah">github.com/joelaah</a>
+      <a href="https://joelaah.github.io/fitness_app/portfolio/">Portfolio</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Technical Skills</div>
+    <div class="skills-grid">
+      <span class="skill-cat">Languages</span>
+      <span class="skill-val">Dart, Python, JavaScript, SQL, HTML5/CSS3</span>
+
+      <span class="skill-cat">Mobile & Web</span>
+      <span class="skill-val">Flutter (iOS, Android, Web), Provider/Riverpod, CanvasKit, Responsive Design</span>
+
+      <span class="skill-cat">AI & RAG</span>
+      <span class="skill-val">Qdrant Cloud (HNSW), Supabase pgvector, Gemini Embedding, Cohere Rerank-v3.5, Semantic Search, LLM Guardrails</span>
+
+      <span class="skill-cat">Backend</span>
+      <span class="skill-val">FastAPI, REST APIs, Node.js, Pydantic, Offline-First Architecture</span>
+
+      <span class="skill-cat">Database & Cloud</span>
+      <span class="skill-val">Supabase (PostgreSQL, RLS), Firebase (Firestore, Auth), Docker, Render</span>
+
+      <span class="skill-cat">Tools</span>
+      <span class="skill-val">Git, GitHub Actions, Linux, Postman</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Projects</div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">PulseFit AI — RAG-Powered Fitness Intelligence Engine</span>
+      </div>
+      <div class="project-tech">Flutter Web · Python FastAPI · Qdrant Cloud · Google Gemini · Cohere · Supabase</div>
+      <div class="project-links">
+        <a href="https://joelaah.github.io/fitness_app/" target="_blank">Live Demo</a> ·
+        <a href="https://joelaah.github.io/fitness_app/portfolio/" target="_blank">Architecture Portfolio</a> ·
+        <a href="https://github.com/joelaah/fitness_app" target="_blank">Frontend Repo</a> ·
+        <a href="https://github.com/joelaah/fitness-rag-api" target="_blank">Backend Repo</a>
+      </div>
+      <ul>
+        <li>Architected a <strong>two-stage RAG pipeline</strong> with Qdrant Cloud HNSW vector indexing (768-dim embeddings via Google Gemini) and <strong>Cohere cross-encoder reranking</strong>, filtering 25 candidates → top 3 with 99.8% precision</li>
+        <li>Eliminated <strong>100% of mathematical hallucinations</strong> in LLM workout generation by decoupling volume analytics into a deterministic Python engine that enforces physical ground truth before invoking Gemini 2.5 Flash</li>
+        <li>Reduced context token overhead by <strong>85%</strong> and achieved <strong>sub-800ms</strong> end-to-end round-trip latency across the full pipeline</li>
+        <li>Built a responsive <strong>Flutter Web</strong> client with offline-first architecture using localStorage, achieving 0ms perceived latency and 60fps UI</li>
+        <li>Integrated <strong>Supabase PostgreSQL</strong> with async background sync and Anonymous JWT auth for zero-friction onboarding</li>
+      </ul>
+    </div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">JOB SeArCh — Autonomous AI Job Hunting & Semantic Matching Engine</span>
+      </div>
+      <div class="project-tech">Flutter Web · Python FastAPI · Supabase (pgvector) · Google Gemini Flash · ATS Scrapers · RAM-Only Vault</div>
+      <div class="project-links">
+        <a href="https://joelaah.github.io/Job-Searcher/" target="_blank">Live Application Demo</a> ·
+        <a href="https://github.com/joelaah/Job-Searcher" target="_blank">GitHub Repository</a> ·
+        <a href="https://joelaah.github.io/fitness_app/portfolio/" target="_blank">Portfolio</a>
+      </div>
+      <ul>
+        <li>Architected an end-to-end career discovery platform projecting candidate profiles and live scraped job postings into a shared <strong>768-dimensional latent vector space</strong> using Supabase <strong>pgvector HNSW cosine indexing</strong> and Gemini embeddings</li>
+        <li>Implemented a <strong>dual-stage AI matching pipeline</strong>: fast vector recall followed by <strong>Google Gemini Flash</strong> re-ranking, domain-bias adaptive steering, and 1-click personalized recruiter outreach generation</li>
+        <li>Built an asynchronous <strong>headless ATS scraper</strong> supporting Ashby, Greenhouse, Lever, and custom company careers pages, extracting salary distributions and role requirements with sub-second latency</li>
+        <li>Designed a <strong>Zero-Knowledge client-side RAM credential vault</strong> with automated DOM autofill and clipboard assist for seamless 1-click external portal submissions without credential leakage</li>
+        <li>Developed a high-performance <strong>Flutter Web</strong> client featuring a marine glassmorphism Bento Grid, reactive BLoC state architecture, and interactive 2D cosine latent space projection</li>
+      </ul>
+    </div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">Video Streaming Platform</span>
+      </div>
+      <div class="project-tech">Flutter · Vimeo API · Stripe · Firebase</div>
+      <ul>
+        <li>Engineered a video streaming application with tiered content access, dynamic cataloging, and clean playback</li>
+        <li>Integrated <strong>Stripe payment gateway</strong> for secure paywalled masterclass and video series access</li>
+        <li>Implemented real-time watch history and user state synchronization using Firebase Firestore</li>
+      </ul>
+    </div>
+
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name">Finance Tracker</span>
+      </div>
+      <div class="project-tech">Flutter · Firebase · Local Storage</div>
+      <ul>
+        <li>Developed an expense/income tracking app with interactive financial visualization charts</li>
+        <li>Built offline-first persistence with automatic cloud synchronization upon reconnection</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Education & Continuous Learning</div>
+    <div class="edu-item">
+      <span class="edu-name">CS50 AI — Artificial Intelligence with Python</span>
+      <span class="edu-detail"> · Harvard (Self-studied)</span>
+    </div>
+    <div class="edu-item">
+      <span class="edu-name">AWS Cloud Practitioner Essentials</span>
+      <span class="edu-detail"> · In Progress</span>
+    </div>
+    <div class="edu-item">
+      <span class="edu-name">Self-directed:</span>
+      <span class="edu-detail"> RAG architectures, vector databases, cross-encoder reranking, production LLM systems</span>
+    </div>
+  </div>
+
+</body>
+</html>
