@@ -60,9 +60,6 @@ RECRUITER_PORTFOLIO_CASE_STUDY.md
 # Local AI assistant configurations
 .claude/
 
-# Portfolio website (separate project, not part of the fitness app)
-portfolio/
-
 # Migration script
 migrate.dart
 

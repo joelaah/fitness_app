@@ -1,6 +1,7 @@
 # 🏋️ PulseFit AI – RAG-Powered Fitness Intelligence & Workout Copilot
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-PulseFit_Web-0284c7?style=for-the-badge&logo=googlechrome&logoColor=white)](https://joelaah.github.io/fitness_app/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Live_Case_Study-8B5CF6?style=for-the-badge&logo=safari&logoColor=white)](https://joelaah.github.io/fitness_app/portfolio/)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x_Web_%26_Mobile-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Qdrant](https://img.shields.io/badge/Vector_DB-Qdrant_Cloud_HNSW-DC2626?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech)
@@ -9,8 +10,15 @@
 
 PulseFit AI is an enterprise-grade fitness tracking and intelligent coaching application. It pairs a high-performance **Flutter Web / Mobile** interface with a **Two-Stage Retrieval-Augmented Generation (RAG)** copilot that delivers hyper-personalized, biomechanically sound workout recommendations based on real user training logs.
 
-🔗 **Live Web App:** [https://joelaah.github.io/fitness_app/](https://joelaah.github.io/fitness_app/)  
-🔗 **RAG Backend Repository:** [https://github.com/joelaah/fitness-rag-api](https://github.com/joelaah/fitness-rag-api)
+---
+
+## 🔗 Live Deployments & Essential Links
+
+- 🌐 **Live Web Application (PulseFit AI):** [https://joelaah.github.io/fitness_app/](https://joelaah.github.io/fitness_app/)
+- 💼 **Interactive Portfolio & Resume:** [https://joelaah.github.io/fitness_app/portfolio/](https://joelaah.github.io/fitness_app/portfolio/)
+- ⚡ **Live RAG Backend API (Render.com):** [https://fitness-rag-api.onrender.com](https://fitness-rag-api.onrender.com)
+- 📖 **Swagger / OpenAPI Documentation:** [https://fitness-rag-api.onrender.com/docs](https://fitness-rag-api.onrender.com/docs)
+- 📁 **Backend Source Repository:** [https://github.com/joelaah/fitness-rag-api](https://github.com/joelaah/fitness-rag-api)
 
 ---
 
@@ -40,19 +48,36 @@ graph TD
 
 ---
 
-## ✨ Key Architectural Highlights
+## 🛡️ Network Safety, Rate Limiting & Resilience
 
-### 1. Two-Stage RAG (Recall & Precision)
-- **Asymmetric Vector Embeddings**: Uses `RETRIEVAL_DOCUMENT` during ingestion and `RETRIEVAL_QUERY` during inference, properly aligning question and document manifolds.
-- **Bi-Encoder Recall + Cross-Encoder Precision**: Retrieves top-25 candidate biomechanics chunks from **Qdrant Cloud** (sub-10ms ANN), then reranks using **Cohere Cross-Attention (`rerank-v3.5`)** to eliminate semantic drift.
+PulseFit AI implements end-to-end network safety across both the Flutter client and the FastAPI backend:
 
-### 2. Deterministic Guardrails Against LLM Hallucinations
-- Volume progression, total sets, reps, and push/pull ratio balance are **never calculated by the neural model**.
-- Arithmetic calculations are computed deterministically in Python and injected into the prompt alongside retrieved science literature, eliminating numerical hallucinations.
+### 1. Client-Side Protection & UX Safeguards (`rag_recommendation_service.dart`)
+- **Sliding-Window Rate Limiting**: Chat messaging is capped at a maximum of **15 requests per 5 minutes**, with a **3-second cooldown** between consecutive requests.
+- **Recommendation Cooldown**: A strict **10-second cooldown** prevents redundant recommendation generation and unnecessary server load.
+- **Input Sanitization**: User messages are trimmed, sanitized against ASCII control characters, and capped at **500 characters** to protect against prompt injection and payload bloating.
+- **Cold-Start Auto-Retry**: Automatically sends a fire-and-forget warm-up ping on service instantiation to wake up Render.com free-tier instances. Includes **exponential backoff retries** (2s, 4s delays, 90s timeout) to ensure zero duplicate requests from users.
+- **Graceful 429 Handling**: Rate limit violations and server 429 responses trigger informative in-chat feedback rather than app crashes or infinite loading states.
 
-### 3. Client-Side Resilience & Offline Fallback
-- **Optimistic Caching**: If network latency exceeds the budget or the cloud service undergoes cold starts, the Flutter client gracefully falls back to cached recommendations with visual indicator flags.
-- **CanvasKit Web Engine**: Web build utilizes Flutter's hardware-accelerated CanvasKit renderer for 60fps smooth animations and zero UI stutter.
+### 2. Server-Side Protection & API Defense (`api.py`)
+- **Thread-Safe Sliding-Window Rate Limiter**:
+  - `/chat`: Capped at **20 requests per minute** per client IP / user.
+  - `/recommend`: Capped at **10 requests per minute** per client IP / user.
+  - Global IP Limit: **60 requests per minute** across all endpoints.
+  - Returns standard **HTTP 429 Too Many Requests** with `Retry-After` header.
+- **Payload Size Guard (HTTP 413)**: Request bodies exceeding **512 KB** are rejected immediately with `413 Payload Too Large` to prevent denial-of-service (DoS) memory attacks.
+- **HTTP Security Headers**: Every response injects `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Strict-Transport-Security`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Strict Specification CORS**: Hardened CORS policy avoiding wildcard credentials conflicts (`allow_credentials=False` with universal origin).
+- **Strict User Isolation**: User identities are derived strictly from verified Supabase JWT Bearer tokens and never trusted from client-provided JSON payloads.
+
+---
+
+## 👤 Recruiter & Reviewer Guide
+
+Recruiters and hiring managers can explore the app immediately without onboarding barriers:
+1. **Zero-Friction Guest Mode**: On launch, anonymous authentication connects seamlessly with Supabase or falls back to local storage—no email or sign-up form required.
+2. **Pre-Loaded Exercises & Routines**: Over 1,300+ categorized exercises and sample workout templates are available immediately on the home screen.
+3. **Interactive Portfolio & Case Study**: Recruiter case studies, interactive resume, and architecture deep-dives are accessible at `/portfolio/`.
 
 ---
 
@@ -60,20 +85,22 @@ graph TD
 
 ```
 fitness_app/
-├── assets/                  # High-resolution exercise database, images & icons
+├── assets/                  # 1300+ exercise GIF/image database & icons
 ├── lib/
 │   ├── core/
 │   │   ├── config/          # Supabase & API environment bindings
 │   │   ├── theme/           # PulseFit dark/neon design system & typography
-│   │   └── widgets/         # Shared atomic UI components
+│   │   └── widgets/         # Shared atomic UI components (chips, charts)
 │   ├── features/
 │   │   ├── auth/            # Supabase authentication & onboarding
 │   │   ├── exercises/       # Muscle-group filtered exercise picker
 │   │   ├── routines/        # Routine builder, split manager, day planner
 │   │   └── workout/         # Live workout logger, timer & AI Coach screens
 │   │       ├── models/      # Session, Recommendation & Set data models
-│   │       └── services/    # rag_recommendation_service.dart (HTTP + Cache)
+│   │       ├── screens/     # ai_coach_screen.dart (Chat & Plan tabs)
+│   │       └── services/    # rag_recommendation_service.dart (Rate limit, RAG HTTP)
 │   └── main.dart            # Flutter entry point
+├── portfolio/               # Recruiter portfolio, resume & project case studies
 └── web/                     # Web deployment assets, splash screen & manifest
 ```
 
@@ -115,5 +142,6 @@ flutter build web --release --base-href /fitness_app/
 ## 👨‍💻 Author
 
 **Joel Lalruatkima**  
+- **Portfolio:** [https://joelaah.github.io/fitness_app/portfolio/](https://joelaah.github.io/fitness_app/portfolio/)  
 - **GitHub:** [@joelaah](https://github.com/joelaah)  
 - **Email:** [joelapachuau64@gmail.com](mailto:joelapachuau64@gmail.com)
