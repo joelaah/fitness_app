@@ -23,7 +23,9 @@
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
         <li><a href="#stack">Stack</a></li>
+        <li><a href="#projects">Systems</a></li>
         <li><a href="#summary">Summary</a></li>
+        <li><a href="resume.html" target="_blank" style="color:var(--accent); font-weight:600;">Resume ↗</a></li>
       </ul>
       <button class="nav-cta" id="open-modal">✉ Hire Me</button>
     </div>
@@ -39,12 +41,13 @@
         </div>
         <h1>Building <span class="accent">Intelligent Systems</span> That Don't Hallucinate.</h1>
         <p class="hero-desc">
-          I'm Joel — I design resilient full-stack applications where deterministic engineering meets neural intelligence. This is a deep dive into <strong>PulseFit AI</strong>, my production two-stage RAG fitness copilot.
+          I'm Joel — I design resilient full-stack applications where deterministic engineering meets neural intelligence. Featured production systems include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous AI career matching engine).
         </p>
         <div class="hero-btns">
-          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ Live Web App</a>
-          <a href="https://github.com/joelaah/fitness_app" target="_blank" class="btn btn-ghost">GitHub Client</a>
-          <a href="https://github.com/joelaah/fitness-rag-api" target="_blank" class="btn btn-ghost">RAG Backend</a>
+          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI Demo</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 JOB SeArCh Demo</a>
+          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 View Resume</a>
+          <a href="#projects" class="btn btn-ghost">Explore Systems ↓</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
@@ -56,8 +59,8 @@
             <span class="hero-stat-label">Math Hallucination</span>
           </div>
           <div class="hero-stat">
-            <span class="hero-stat-value">5 Layers</span>
-            <span class="hero-stat-label">Production Pipeline</span>
+            <span class="hero-stat-value">2 Apps</span>
+            <span class="hero-stat-label">Production Deployed</span>
           </div>
         </div>
       </div>
@@ -304,6 +307,98 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </section>
 
+  <!-- Featured Systems Section -->
+  <section id="projects" class="section">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <div class="section-label">Production Showcase</div>
+        <h2 class="section-title">Deployed Systems & Architectures</h2>
+        <p class="section-desc">Production applications combining Flutter frontends, Python microservices, and high-dimensional vector search.</p>
+      </div>
+
+      <div class="projects-grid">
+        <!-- Project 1: PulseFit AI -->
+        <div class="proj-card">
+          <div class="proj-header">
+            <div class="proj-badge-wrap">
+              <span class="badge badge-accent">Production AI</span>
+              <span class="badge badge-green">Live Web App</span>
+            </div>
+            <h3 class="proj-title">PulseFit AI</h3>
+            <p class="proj-tagline">RAG-Powered Fitness Copilot & Deterministic Intelligence Engine</p>
+          </div>
+          <p class="proj-desc">
+            A production two-stage RAG application eliminating LLM arithmetic hallucinations via deterministic Python volume math, sub-15ms Qdrant Cloud vector search, Cohere cross-encoder reranking, and offline-first Flutter Web client.
+          </p>
+          <div class="proj-tags">
+            <span class="proj-tag">Flutter Web</span>
+            <span class="proj-tag">Python FastAPI</span>
+            <span class="proj-tag">Qdrant HNSW</span>
+            <span class="proj-tag">Cohere Rerank</span>
+            <span class="proj-tag">Gemini Flash</span>
+            <span class="proj-tag">Supabase</span>
+          </div>
+          <div class="proj-highlights">
+            <div class="proj-highlight">
+              <span class="hl-icon">⚡</span>
+              <span>Sub-800ms end-to-end pipeline latency with 0% math hallucination</span>
+            </div>
+            <div class="proj-highlight">
+              <span class="hl-icon">📱</span>
+              <span>Offline-first localStorage persistence with background cloud sync</span>
+            </div>
+          </div>
+          <div class="proj-actions">
+            <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-sm btn-fill">⚡ Live App</a>
+            <a href="https://github.com/joelaah/fitness_app" target="_blank" class="btn btn-sm btn-ghost">Client Repo</a>
+            <a href="https://github.com/joelaah/fitness-rag-api" target="_blank" class="btn btn-sm btn-ghost">RAG Backend</a>
+          </div>
+        </div>
+
+        <!-- Project 2: JOB SeArCh -->
+        <div class="proj-card proj-card--cyan">
+          <div class="proj-header">
+            <div class="proj-badge-wrap">
+              <span class="badge badge-cyan">Semantic Search</span>
+              <span class="badge badge-green">Live Web App</span>
+            </div>
+            <h3 class="proj-title">JOB SeArCh</h3>
+            <p class="proj-tagline">Autonomous AI Job Hunting & Semantic Vector Matching Engine</p>
+          </div>
+          <p class="proj-desc">
+            An intelligent career discovery system projecting candidate profiles and live scraped job postings into a shared 768-dimensional latent space. Features real-time ATS scraping, dynamic recruiter pitch generation, and a zero-knowledge local credential vault.
+          </p>
+          <div class="proj-tags">
+            <span class="proj-tag">Flutter Web</span>
+            <span class="proj-tag">BLoC Pattern</span>
+            <span class="proj-tag">Supabase pgvector</span>
+            <span class="proj-tag">Google Gemini</span>
+            <span class="proj-tag">ATS Scraper API</span>
+            <span class="proj-tag">RAM-Only Vault</span>
+          </div>
+          <div class="proj-highlights">
+            <div class="proj-highlight">
+              <span class="hl-icon">🎯</span>
+              <span>768-dim HNSW cosine indexing with Gemini Flash re-ranking & pitch generation</span>
+            </div>
+            <div class="proj-highlight">
+              <span class="hl-icon">🛡️</span>
+              <span>Zero-knowledge client-side RAM credential vault with 1-click portal autofill</span>
+            </div>
+            <div class="proj-highlight">
+              <span class="hl-icon">🕷️</span>
+              <span>Headless multi-source ATS extraction for Ashby, Greenhouse, and Lever</span>
+            </div>
+          </div>
+          <div class="proj-actions">
+            <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">🎯 Live App</a>
+            <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-sm btn-ghost">GitHub Repo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Executive Summary & Engineering Impact CTA -->
   <section id="summary" class="section">
     <div class="container">
@@ -312,7 +407,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
           <div class="section-label" style="color: var(--accent);">Engineering Impact</div>
           <h2 class="cta-title">Engineering Reliable Intelligence at Production Scale</h2>
           <p class="cta-desc">
-            Modern AI products cannot rely on probabilistic models alone. PulseFit AI demonstrates my engineering philosophy: decoupling deterministic arithmetic, enforcing strict physical ground truth, and augmenting LLMs with sub-15ms vector recall and cross-encoder precision.
+            Modern AI products cannot rely on probabilistic models alone. PulseFit AI and JOB SeArCh demonstrate my engineering philosophy: decoupling deterministic arithmetic, enforcing strict ground truth, and augmenting LLMs with sub-15ms vector recall and cross-encoder precision.
           </p>
         </div>
 
@@ -320,7 +415,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
           <div class="cta-card">
             <div class="cta-card-icon">⚡</div>
             <div class="cta-card-title">Production Latency</div>
-            <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant Cloud vector recall, and Gemini Flash inference.</p>
+            <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant/pgvector recall, and Gemini Flash inference.</p>
           </div>
           <div class="cta-card">
             <div class="cta-card-icon">🛡️</div>
@@ -341,8 +436,8 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
           </div>
           <div class="cta-action-btns">
             <button class="btn btn-fill" id="open-modal-summary">✉️ Let's Connect</button>
-            <a href="https://github.com/joelaah/fitness_app" target="_blank" class="btn btn-outline">Client Repo</a>
-            <a href="https://github.com/joelaah/fitness-rag-api" target="_blank" class="btn btn-outline">Backend Repo</a>
+            <a href="resume.html" target="_blank" class="btn btn-outline">View Resume</a>
+            <a href="https://github.com/joelaah" target="_blank" class="btn btn-outline">GitHub Profile</a>
           </div>
         </div>
       </div>
@@ -373,8 +468,22 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
       <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="modal-link">
         <span class="modal-link-icon">🚀</span>
         <div>
-          <div class="modal-link-title">Live Demo</div>
+          <div class="modal-link-title">PulseFit AI Live Demo</div>
           <div class="modal-link-sub">joelaah.github.io/fitness_app/</div>
+        </div>
+      </a>
+      <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="modal-link">
+        <span class="modal-link-icon">🎯</span>
+        <div>
+          <div class="modal-link-title">JOB SeArCh Live Demo</div>
+          <div class="modal-link-sub">joelaah.github.io/Job-Searcher/</div>
+        </div>
+      </a>
+      <a href="resume.html" target="_blank" class="modal-link">
+        <span class="modal-link-icon">📄</span>
+        <div>
+          <div class="modal-link-title">Interactive Resume</div>
+          <div class="modal-link-sub">View Resume (HTML & Print)</div>
         </div>
       </a>
     </div>
@@ -384,12 +493,14 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
   <footer class="footer">
     <div class="container">
       <div class="footer-links">
-        <a href="https://joelaah.github.io/fitness_app/" target="_blank">Live Demo</a>
-        <a href="https://github.com/joelaah/fitness_app" target="_blank">Client Repo</a>
-        <a href="https://github.com/joelaah/fitness-rag-api" target="_blank">Backend Repo</a>
+        <a href="https://joelaah.github.io/fitness_app/" target="_blank">PulseFit Demo</a>
+        <a href="https://joelaah.github.io/Job-Searcher/" target="_blank">JOB SeArCh Demo</a>
+        <a href="resume.html" target="_blank">Resume</a>
+        <a href="https://github.com/joelaah/fitness_app" target="_blank">PulseFit Repo</a>
+        <a href="https://github.com/joelaah/Job-Searcher" target="_blank">Job-Searcher Repo</a>
         <a href="mailto:joelapachuau64@gmail.com">Email</a>
       </div>
-      <p class="footer-copy">&copy; 2026 Joel Pachuau</p>
+      <p class="footer-copy">&copy; 2026 Joel Pachuau · Full-Stack & AI Systems Engineer</p>
     </div>
   </footer>
 

@@ -60,9 +60,8 @@ RECRUITER_PORTFOLIO_CASE_STUDY.md
 # Local AI assistant configurations
 .claude/
 
-# Local portfolio screenshots & scratch resume
+# Local portfolio screenshots
 portfolio/*.png
-portfolio/resume.html
 
 
 

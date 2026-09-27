@@ -58,7 +58,6 @@ function init3DScene() {
     metalness: 0.1,
     roughness: 0.15,
     transmission: 0.85,
-    thickness: 0.8,
     transparent: true,
     opacity: 0.7,
   });
@@ -447,6 +446,13 @@ function initModal() {
   // Click outside to close
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
+  });
+
+  // Auto-close modal when clicking any navigation link inside
+  overlay.querySelectorAll('.modal-link').forEach(link => {
+    link.addEventListener('click', () => {
+      setTimeout(close, 200);
+    });
   });
 
   // Escape key
