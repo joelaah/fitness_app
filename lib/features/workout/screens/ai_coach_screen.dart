@@ -84,7 +84,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       if (mounted) {
         setState(() {
           _errorMessage =
-              'AI Coach is temporarily warming up. Your workout history is safe.';
+              'AI Coach is still warming up. Retries were attempted automatically — tap below to try again.';
           _isLoading = false;
         });
       }
@@ -132,7 +132,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           _messages.add({
             'role': 'assistant',
             'text':
-                'Connection to AI Coach timed out while the cloud server was waking up. Please tap again in a few seconds!',
+                'AI Coach is still waking up on the server. Please try again in a moment — the server should be ready shortly!',
             'sources': <String>[],
             'is_error': true,
           });
@@ -246,7 +246,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                         ),
                         SizedBox(width: 10),
                         Text(
-                          'Searching knowledge base & thinking...',
+                          'Searching knowledge base & thinking…',
                           style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                         ),
                       ],
@@ -450,8 +450,13 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             title: 'No Workout History Yet',
             description:
                 'Complete your first workout so the AI Coach can analyze your volume, fatigue, and progression.',
-            buttonText: 'Back to Home',
-            onButtonPressed: () => Navigator.of(context).pop(),
+            buttonText: 'Go to AI Chat',
+            onButtonPressed: () {
+              // Switch to the AI Chat tab (index 0) instead of popping the
+              // navigator. This screen lives inside an IndexedStack so pop()
+              // would remove the only route and leave the splash screen stuck.
+              DefaultTabController.of(context).animateTo(0);
+            },
           ),
         ),
       );
