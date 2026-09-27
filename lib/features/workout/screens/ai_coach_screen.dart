@@ -80,6 +80,13 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           _isLoading = false;
         });
       }
+    } on RateLimitException catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.message;
+          _isLoading = false;
+        });
+      }
     } on Exception catch (_) {
       if (mounted) {
         setState(() {
@@ -121,6 +128,19 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             'text': reply,
             'sources': sources,
             'source_type': res['pipeline_source'] ?? 'rag',
+          });
+          _isSending = false;
+        });
+        _scrollToBottom();
+      }
+    } on RateLimitException catch (e) {
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'role': 'assistant',
+            'text': e.message,
+            'sources': <String>[],
+            'is_error': true,
           });
           _isSending = false;
         });

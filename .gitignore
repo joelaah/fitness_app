@@ -66,4 +66,8 @@ portfolio/
 # Migration script
 migrate.dart
 
+# Database schema (keep private)
+supabase_schema.sql
 
+# Agents config
+.agents/
