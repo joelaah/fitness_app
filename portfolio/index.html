@@ -27,7 +27,10 @@
         <li><a href="#summary">Summary</a></li>
         <li><a href="resume.html" target="_blank" style="color:var(--accent); font-weight:600;">Resume ↗</a></li>
       </ul>
-      <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      <div class="nav-actions">
+        <button class="nav-cli-btn" id="open-terminal" title="Launch Interactive Developer CLI">>_ CLI</button>
+        <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      </div>
     </div>
   </nav>
 
@@ -76,22 +79,22 @@
   <section id="metrics" class="section" style="padding-top: 40px;">
     <div class="container">
       <div class="metrics">
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">< 15ms</div>
           <div class="metric-name">Vector Retrieval</div>
           <div class="metric-detail">Qdrant Cloud HNSW index across 768-dim embeddings</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">0%</div>
           <div class="metric-name">Numerical Hallucination</div>
           <div class="metric-detail">Tonnage and set math computed deterministically in Python</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">−85%</div>
           <div class="metric-name">Token Bloat Reduction</div>
           <div class="metric-detail">Cohere cross-encoder filters 25 candidates to top 3</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">100%</div>
           <div class="metric-name">Offline-First Logging</div>
           <div class="metric-detail">Flutter Web → HTML5 localStorage with async cloud sync</div>
@@ -276,7 +279,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
       </div>
 
       <div class="stack-grid">
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-blue">📱</span> Client</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">Flutter 3.x</span><span class="stack-item-role">Web & Mobile</span></div>
@@ -285,7 +288,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">Dart Async</span><span class="stack-item-role">Non-blocking Sync</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-green">⚡</span> Backend</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">FastAPI</span><span class="stack-item-role">Async REST</span></div>
@@ -294,7 +297,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">JWT Auth</span><span class="stack-item-role">Anonymous Onboarding</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-purple">🧠</span> AI Pipeline</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">Qdrant Cloud</span><span class="stack-item-role">HNSW Vector DB</span></div>
@@ -318,7 +321,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
 
       <div class="projects-grid">
         <!-- Project 1: PulseFit AI -->
-        <div class="proj-card">
+        <div class="proj-card spotlight-card">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-accent">Production AI</span>
@@ -365,7 +368,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <!-- Project 2: JOB SeArCh -->
-        <div class="proj-card proj-card--cyan">
+        <div class="proj-card proj-card--cyan spotlight-card">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-cyan">Semantic Search</span>
@@ -449,17 +452,17 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <div class="cta-grid">
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">⚡</div>
             <div class="cta-card-title">Production Latency</div>
             <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant/pgvector recall, and Gemini Flash inference.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">🛡️</div>
             <div class="cta-card-title">Zero Math Hallucination</div>
             <p class="cta-card-text">Total tonnage and hypertrophy splits computed via pure deterministic Python before injecting ground truth into the generation prompt.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">📱</div>
             <div class="cta-card-title">Local-First Architecture</div>
             <p class="cta-card-text">Instant 0ms UI updates via browser localStorage and optimistic UI patterns, backed by asynchronous Supabase PostgreSQL synchronization.</p>
@@ -526,6 +529,39 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </div>
 
+  <!-- Live Interactive Recruiter Terminal -->
+  <div class="terminal-overlay" id="terminal-overlay">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="dot-btn red" id="term-close" title="Close Terminal"></span>
+          <span class="dot-btn yellow" id="term-min" title="Minimize"></span>
+          <span class="dot-btn green" id="term-max" title="Clear Buffer"></span>
+        </div>
+        <div class="terminal-title">joel@systems-node:~ (zsh)</div>
+        <div class="terminal-actions">
+          <span class="term-status-badge">ONLINE · 768d VECTOR READY</span>
+        </div>
+      </div>
+      <div class="terminal-body" id="term-body">
+        <div class="term-line welcome">
+          <span class="term-cyan">Joel Pachuau — AI & Full-Stack Systems CLI [v2.4.0]</span><br>
+          <span class="term-dim">Connected to local node. Type</span> <span class="term-accent">'help'</span> <span class="term-dim">or run</span> <span class="term-green">'curl /api/match'</span> <span class="term-dim">to benchmark.</span>
+        </div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="term-prompt">joel@prod:~$</span>
+        <input type="text" id="term-input" class="term-input" placeholder="type a command (help, projects, skills, curl, clear)..." autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating CLI Launcher Pill -->
+  <button class="floating-cli-pill" id="floating-cli" title="Launch Interactive Developer CLI">
+    <span class="cli-icon">>_</span>
+    <span class="cli-label">Interactive Terminal</span>
+  </button>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
@@ -541,6 +577,8 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </footer>
 
+  <!-- Lenis Smooth Scroll -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
   <!-- Three.js from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="app.js"></script>
