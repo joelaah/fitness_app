@@ -19,6 +19,7 @@
         <span>Joel Pachuau</span>
       </div>
       <ul class="nav-links">
+        <li><a href="#demo-reel-spotlight" class="nav-video-btn">🎬 Video Demo</a></li>
         <li><a href="#metrics">Metrics</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
@@ -48,7 +49,7 @@
           I'm Joel — I design resilient full-stack applications where deterministic systems engineering meets state-of-the-art neural intelligence. Featured production deployments include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous career discovery engine powered by <strong>Grok LLM</strong> & Supabase pgvector).
         </p>
         <div class="hero-btns">
-          <button class="btn btn-video-glow" id="hero-video-btn">🎬 Watch Job Search Video</button>
+          <a href="#demo-reel-spotlight" class="btn btn-video-glow" id="hero-video-btn">🎬 Watch Job Search Video (90s Demo)</a>
           <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 Live App Demo</a>
           <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI</a>
           <a href="resume.html" target="_blank" class="btn btn-ghost">📄 Resume</a>
@@ -99,6 +100,59 @@
           <div class="metric-val">100%</div>
           <div class="metric-name">Offline-First Logging</div>
           <div class="metric-detail">Flutter Web → HTML5 localStorage with async cloud sync</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FEATURED VIDEO DEMONSTRATION SPOTLIGHT
+       ============================================ -->
+  <section id="demo-reel-spotlight" class="section video-spotlight-section">
+    <div class="container">
+      <div class="spotlight-banner">
+        <div class="spotlight-header">
+          <div class="spotlight-badge">
+            <span class="ribbon-live-dot"></span>
+            <span>SYSTEM WALKTHROUGH · 1080P 60FPS</span>
+          </div>
+          <h2 class="spotlight-title">JOB SeArCh — Autonomous Career Matching Engine Demo Reel</h2>
+          <p class="spotlight-desc">
+            Dual-stage AI pipeline powered by <strong>Grok LLM</strong>, Supabase pgvector HNSW latent space matching, real-time headless ATS scraping (Ashby, Greenhouse, Lever), and a zero-knowledge local credential vault.
+          </p>
+        </div>
+
+        <div class="spotlight-player-wrap">
+          <div class="spotlight-player-bar">
+            <div class="player-bar-left">
+              <span class="player-dot red"></span>
+              <span class="player-dot yellow"></span>
+              <span class="player-dot green"></span>
+              <span class="player-title">job_search_demonstration_1080p.mp4</span>
+            </div>
+            <div class="player-bar-right">
+              <span class="player-tag">1080p 60FPS</span>
+              <span class="player-tag">Grok LLM</span>
+              <span class="player-tag">ChristopherNeural AI</span>
+            </div>
+          </div>
+          <video class="spotlight-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+            <source src="assets/demo_reel.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="spotlight-player-footer">
+            <div class="spotlight-audio-pill">
+              <span class="audio-icon">🎙️</span>
+              <span class="audio-text">AI Voiceover Track:</span>
+              <audio controls preload="none" class="mini-audio">
+                <source src="assets/voiceover_demo.mp3" type="audio/mpeg">
+              </audio>
+            </div>
+            <div class="spotlight-actions">
+              <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan btn-sm">🎯 Launch Live Web App ↗</a>
+              <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-ghost btn-sm">GitHub Repo ↗</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
