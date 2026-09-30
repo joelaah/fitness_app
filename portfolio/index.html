@@ -19,15 +19,20 @@
         <span>Joel Pachuau</span>
       </div>
       <ul class="nav-links">
+        <li><a href="#demo-reel-spotlight" class="nav-video-btn">🎬 Video Demo</a></li>
         <li><a href="#metrics">Metrics</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
         <li><a href="#stack">Stack</a></li>
+        <li><a href="#job-search-demo" class="nav-video-btn">🎬 Video Reel</a></li>
         <li><a href="#projects">Systems</a></li>
         <li><a href="#summary">Summary</a></li>
         <li><a href="resume.html" target="_blank" style="color:var(--accent); font-weight:600;">Resume ↗</a></li>
       </ul>
-      <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      <div class="nav-actions">
+        <button class="nav-cli-btn" id="open-terminal" title="Launch Interactive Developer CLI">>_ CLI</button>
+        <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      </div>
     </div>
   </nav>
 
@@ -39,15 +44,15 @@
           <span class="dot"></span>
           Open to Opportunities
         </div>
-        <h1>Building <span class="accent">Intelligent Systems</span> That Don't Hallucinate.</h1>
+        <h1>Building <span class="accent">Intelligent Systems</span> with Neural Speed & Precision.</h1>
         <p class="hero-desc">
-          I'm Joel — I design resilient full-stack applications where deterministic engineering meets neural intelligence. Featured production systems include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous AI career matching engine).
+          I'm Joel — I design resilient full-stack applications where deterministic systems engineering meets state-of-the-art neural intelligence. Featured production deployments include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous career discovery engine powered by <strong>Grok LLM</strong> & Supabase pgvector).
         </p>
         <div class="hero-btns">
-          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI Demo</a>
-          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 JOB SeArCh Demo</a>
-          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 View Resume</a>
-          <a href="#projects" class="btn btn-ghost">Explore Systems ↓</a>
+          <a href="#demo-reel-spotlight" class="btn btn-video-glow" id="hero-video-btn">🎬 Watch Job Search Video (90s Demo)</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 Live App Demo</a>
+          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI</a>
+          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 Resume</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
@@ -76,25 +81,78 @@
   <section id="metrics" class="section" style="padding-top: 40px;">
     <div class="container">
       <div class="metrics">
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">< 15ms</div>
           <div class="metric-name">Vector Retrieval</div>
           <div class="metric-detail">Qdrant Cloud HNSW index across 768-dim embeddings</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">0%</div>
           <div class="metric-name">Numerical Hallucination</div>
           <div class="metric-detail">Tonnage and set math computed deterministically in Python</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">−85%</div>
           <div class="metric-name">Token Bloat Reduction</div>
           <div class="metric-detail">Cohere cross-encoder filters 25 candidates to top 3</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">100%</div>
           <div class="metric-name">Offline-First Logging</div>
           <div class="metric-detail">Flutter Web → HTML5 localStorage with async cloud sync</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FEATURED VIDEO DEMONSTRATION SPOTLIGHT
+       ============================================ -->
+  <section id="demo-reel-spotlight" class="section video-spotlight-section">
+    <div class="container">
+      <div class="spotlight-banner">
+        <div class="spotlight-header">
+          <div class="spotlight-badge">
+            <span class="ribbon-live-dot"></span>
+            <span>SYSTEM WALKTHROUGH · 1080P 60FPS</span>
+          </div>
+          <h2 class="spotlight-title">JOB SeArCh — Autonomous Career Matching Engine Demo Reel</h2>
+          <p class="spotlight-desc">
+            Dual-stage AI pipeline powered by <strong>Grok LLM</strong>, Supabase pgvector HNSW latent space matching, real-time headless ATS scraping (Ashby, Greenhouse, Lever), and a zero-knowledge local credential vault.
+          </p>
+        </div>
+
+        <div class="spotlight-player-wrap">
+          <div class="spotlight-player-bar">
+            <div class="player-bar-left">
+              <span class="player-dot red"></span>
+              <span class="player-dot yellow"></span>
+              <span class="player-dot green"></span>
+              <span class="player-title">job_search_demonstration_1080p.mp4</span>
+            </div>
+            <div class="player-bar-right">
+              <span class="player-tag">1080p 60FPS</span>
+              <span class="player-tag">Grok LLM</span>
+              <span class="player-tag">ChristopherNeural AI</span>
+            </div>
+          </div>
+          <video class="spotlight-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+            <source src="assets/demo_reel.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="spotlight-player-footer">
+            <div class="spotlight-audio-pill">
+              <span class="audio-icon">🎙️</span>
+              <span class="audio-text">AI Voiceover Track:</span>
+              <audio controls preload="none" class="mini-audio">
+                <source src="assets/voiceover_demo.mp3" type="audio/mpeg">
+              </audio>
+            </div>
+            <div class="spotlight-actions">
+              <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan btn-sm">🎯 Launch Live Web App ↗</a>
+              <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-ghost btn-sm">GitHub Repo ↗</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -276,7 +334,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
       </div>
 
       <div class="stack-grid">
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-blue">📱</span> Client</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">Flutter 3.x</span><span class="stack-item-role">Web & Mobile</span></div>
@@ -285,7 +343,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">Dart Async</span><span class="stack-item-role">Non-blocking Sync</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-green">⚡</span> Backend</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">FastAPI</span><span class="stack-item-role">Async REST</span></div>
@@ -294,13 +352,14 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">JWT Auth</span><span class="stack-item-role">Anonymous Onboarding</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-purple">🧠</span> AI Pipeline</div>
           <div class="stack-list">
+            <div class="stack-item"><span class="stack-item-name">Grok LLM</span><span class="stack-item-role">Ultra-Fast Inference</span></div>
+            <div class="stack-item"><span class="stack-item-name">Supabase pgvector</span><span class="stack-item-role">HNSW Latent Space</span></div>
             <div class="stack-item"><span class="stack-item-name">Qdrant Cloud</span><span class="stack-item-role">HNSW Vector DB</span></div>
             <div class="stack-item"><span class="stack-item-name">Cohere v3.5</span><span class="stack-item-role">Cross-Encoder</span></div>
             <div class="stack-item"><span class="stack-item-name">Gemini-Embed-2</span><span class="stack-item-role">768-dim Vectors</span></div>
-            <div class="stack-item"><span class="stack-item-name">Gemini Flash</span><span class="stack-item-role">Grounded Gen</span></div>
           </div>
         </div>
       </div>
@@ -318,7 +377,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
 
       <div class="projects-grid">
         <!-- Project 1: PulseFit AI -->
-        <div class="proj-card">
+        <div class="proj-card spotlight-card">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-accent">Production AI</span>
@@ -327,6 +386,15 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <h3 class="proj-title">PulseFit AI</h3>
             <p class="proj-tagline">RAG-Powered Fitness Copilot & Deterministic Intelligence Engine</p>
           </div>
+
+          <div class="proj-media-wrap">
+            <img src="pulsefit_real_thumbnail.png" alt="PulseFit AI Interface" style="width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:var(--radius) var(--radius) 0 0;" />
+            <div class="proj-media-caption">
+              <span>⚡ PulseFit AI Production UI & Workout Analytics</span>
+              <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="caption-link">Open Live App ↗</a>
+            </div>
+          </div>
+
           <p class="proj-desc">
             A production two-stage RAG application eliminating LLM arithmetic hallucinations via deterministic Python volume math, sub-15ms Qdrant Cloud vector search, Cohere cross-encoder reranking, and offline-first Flutter Web client.
           </p>
@@ -356,30 +424,62 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <!-- Project 2: JOB SeArCh -->
-        <div class="proj-card proj-card--cyan">
+        <div class="proj-card proj-card--cyan spotlight-card" id="job-search-demo">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-cyan">Semantic Search</span>
               <span class="badge badge-green">Live Web App</span>
+              <span class="badge badge-accent">🎬 1080p Video Reel</span>
             </div>
             <h3 class="proj-title">JOB SeArCh</h3>
             <p class="proj-tagline">Autonomous AI Job Hunting & Semantic Vector Matching Engine</p>
           </div>
+
+          <!-- Video Demo Reel Preview -->
+          <div class="proj-media-wrap video-featured-wrap">
+            <div class="video-ribbon">
+              <span class="ribbon-live-dot"></span>
+              <span class="ribbon-title">FEATURED SYSTEM DEMO REEL</span>
+              <span class="ribbon-meta">90s · 1080p Ultra HD · ChristopherNeural AI Audio</span>
+            </div>
+            <video class="proj-video" id="job-search-inline-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+              <source src="assets/demo_reel.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <div class="proj-media-caption">
+              <span>🎬 <strong>JOB SeArCh Video Walkthrough</strong> — 5 Pillars: Latent Space, ATS Scraper, Grok Matching, RAM Vault & 1-Click Apply</span>
+              <a href="assets/demo_reel.mp4" target="_blank" class="caption-link">Open Fullscreen ↗</a>
+            </div>
+          </div>
+
+          <!-- AI Voiceover Track -->
+          <div class="proj-audio-wrap">
+            <div class="audio-label">
+              <span>🎙️</span>
+              <span>AI Voiceover Track (en-US-ChristopherNeural)</span>
+            </div>
+            <audio class="proj-audio" controls preload="none">
+              <source src="assets/voiceover_demo.mp3" type="audio/mpeg">
+            </audio>
+          </div>
+
           <p class="proj-desc">
-            An intelligent career discovery system projecting candidate profiles and live scraped job postings into a shared 768-dimensional latent space. Features real-time ATS scraping, dynamic recruiter pitch generation, and a zero-knowledge local credential vault.
+            An intelligent career discovery system projecting candidate profiles and live scraped job postings into a shared 768-dimensional latent space. Features real-time ATS scraping (Ashby, Greenhouse, Lever), Grok LLM ultra-fast inference for deep contextual alignment, and a zero-knowledge local credential vault.
           </p>
           <div class="proj-tags">
             <span class="proj-tag">Flutter Web</span>
             <span class="proj-tag">BLoC Pattern</span>
             <span class="proj-tag">Supabase pgvector</span>
-            <span class="proj-tag">Google Gemini</span>
-            <span class="proj-tag">ATS Scraper API</span>
+            <span class="proj-tag">Grok LLM</span>
+            <span class="proj-tag">FastEmbed 768d</span>
+            <span class="proj-tag">ATS Scrapers</span>
             <span class="proj-tag">RAM-Only Vault</span>
+            <span class="proj-tag">15/15 Tests Passing</span>
           </div>
           <div class="proj-highlights">
             <div class="proj-highlight">
               <span class="hl-icon">🎯</span>
-              <span>768-dim HNSW cosine indexing with Gemini Flash re-ranking & pitch generation</span>
+              <span>768-dim HNSW cosine indexing with Grok LLM re-ranking & pitch generation</span>
             </div>
             <div class="proj-highlight">
               <span class="hl-icon">🛡️</span>
@@ -387,11 +487,12 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             </div>
             <div class="proj-highlight">
               <span class="hl-icon">🕷️</span>
-              <span>Headless multi-source ATS extraction for Ashby, Greenhouse, and Lever</span>
+              <span>Headless multi-source ATS extraction for Ashby, Greenhouse, Lever & custom URLs</span>
             </div>
           </div>
           <div class="proj-actions">
             <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">🎯 Live App</a>
+            <a href="assets/demo_reel.mp4" target="_blank" class="btn btn-sm btn-ghost">🎬 Demo Reel</a>
             <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-sm btn-ghost">GitHub Repo</a>
           </div>
         </div>
@@ -412,17 +513,17 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <div class="cta-grid">
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">⚡</div>
             <div class="cta-card-title">Production Latency</div>
             <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant/pgvector recall, and Gemini Flash inference.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">🛡️</div>
             <div class="cta-card-title">Zero Math Hallucination</div>
             <p class="cta-card-text">Total tonnage and hypertrophy splits computed via pure deterministic Python before injecting ground truth into the generation prompt.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">📱</div>
             <div class="cta-card-title">Local-First Architecture</div>
             <p class="cta-card-text">Instant 0ms UI updates via browser localStorage and optimistic UI patterns, backed by asynchronous Supabase PostgreSQL synchronization.</p>
@@ -489,6 +590,70 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </div>
 
+  <!-- Live Interactive Recruiter Terminal -->
+  <div class="terminal-overlay" id="terminal-overlay">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="dot-btn red" id="term-close" title="Close Terminal"></span>
+          <span class="dot-btn yellow" id="term-min" title="Minimize"></span>
+          <span class="dot-btn green" id="term-max" title="Clear Buffer"></span>
+        </div>
+        <div class="terminal-title">joel@systems-node:~ (zsh)</div>
+        <div class="terminal-actions">
+          <span class="term-status-badge">ONLINE · 768d VECTOR READY</span>
+        </div>
+      </div>
+      <div class="terminal-body" id="term-body">
+        <div class="term-line welcome">
+          <span class="term-cyan">Joel Pachuau — AI & Full-Stack Systems CLI [v2.4.0]</span><br>
+          <span class="term-dim">Connected to local node. Type</span> <span class="term-accent">'help'</span> <span class="term-dim">or run</span> <span class="term-green">'curl /api/match'</span> <span class="term-dim">to benchmark.</span>
+        </div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="term-prompt">joel@prod:~$</span>
+        <input type="text" id="term-input" class="term-input" placeholder="type a command (help, projects, skills, curl, clear)..." autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
+
+  <!-- High-Definition Video Walkthrough Modal -->
+  <div class="video-modal-overlay" id="video-modal-overlay">
+    <div class="video-modal-window">
+      <div class="video-modal-header">
+        <div class="video-modal-title">
+          <span class="video-modal-badge">🎬 DEMO REEL</span>
+          <strong>JOB SeArCh — Autonomous AI Job Hunting Engine</strong>
+        </div>
+        <button class="video-modal-close" id="video-modal-close" title="Close Video">&times;</button>
+      </div>
+      <div class="video-modal-body">
+        <video id="modal-video-player" class="modal-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+          <source src="assets/demo_reel.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div class="video-modal-footer">
+        <div class="video-modal-tags">
+          <span class="proj-tag">Flutter Web</span>
+          <span class="proj-tag">Grok LLM</span>
+          <span class="proj-tag">Supabase pgvector</span>
+          <span class="proj-tag">Zero-Knowledge Vault</span>
+        </div>
+        <div class="video-modal-actions">
+          <a href="#job-search-demo" class="btn btn-sm btn-ghost" id="modal-jump-btn">Scroll to Project Details ↓</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">Launch Live App ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating CLI Launcher Pill -->
+  <button class="floating-cli-pill" id="floating-cli" title="Launch Interactive Developer CLI">
+    <span class="cli-icon">>_</span>
+    <span class="cli-label">Interactive Terminal</span>
+  </button>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
@@ -504,6 +669,8 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </footer>
 
+  <!-- Lenis Smooth Scroll -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
   <!-- Three.js from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="app.js"></script>
