@@ -23,6 +23,7 @@
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
         <li><a href="#stack">Stack</a></li>
+        <li><a href="#job-search-demo" class="nav-video-btn">🎬 Video Reel</a></li>
         <li><a href="#projects">Systems</a></li>
         <li><a href="#summary">Summary</a></li>
         <li><a href="resume.html" target="_blank" style="color:var(--accent); font-weight:600;">Resume ↗</a></li>
@@ -47,10 +48,10 @@
           I'm Joel — I design resilient full-stack applications where deterministic systems engineering meets state-of-the-art neural intelligence. Featured production deployments include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous career discovery engine powered by <strong>Grok LLM</strong> & Supabase pgvector).
         </p>
         <div class="hero-btns">
-          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI Demo</a>
-          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 JOB SeArCh Demo</a>
-          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 View Resume</a>
-          <a href="#projects" class="btn btn-ghost">Explore Systems ↓</a>
+          <button class="btn btn-video-glow" id="hero-video-btn">🎬 Watch Job Search Video</button>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 Live App Demo</a>
+          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI</a>
+          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 Resume</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
@@ -369,25 +370,30 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <!-- Project 2: JOB SeArCh -->
-        <div class="proj-card proj-card--cyan spotlight-card">
+        <div class="proj-card proj-card--cyan spotlight-card" id="job-search-demo">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-cyan">Semantic Search</span>
               <span class="badge badge-green">Live Web App</span>
-              <span class="badge badge-accent">1080p Video Reel</span>
+              <span class="badge badge-accent">🎬 1080p Video Reel</span>
             </div>
             <h3 class="proj-title">JOB SeArCh</h3>
             <p class="proj-tagline">Autonomous AI Job Hunting & Semantic Vector Matching Engine</p>
           </div>
 
           <!-- Video Demo Reel Preview -->
-          <div class="proj-media-wrap">
-            <video class="proj-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+          <div class="proj-media-wrap video-featured-wrap">
+            <div class="video-ribbon">
+              <span class="ribbon-live-dot"></span>
+              <span class="ribbon-title">FEATURED SYSTEM DEMO REEL</span>
+              <span class="ribbon-meta">90s · 1080p Ultra HD · ChristopherNeural AI Audio</span>
+            </div>
+            <video class="proj-video" id="job-search-inline-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
               <source src="assets/demo_reel.mp4" type="video/mp4">
               Your browser does not support the video tag.
             </video>
             <div class="proj-media-caption">
-              <span>🎬 90s Demo Reel with Neural AI Voiceover</span>
+              <span>🎬 <strong>JOB SeArCh Video Walkthrough</strong> — 5 Pillars: Latent Space, ATS Scraper, Grok Matching, RAM Vault & 1-Click Apply</span>
               <a href="assets/demo_reel.mp4" target="_blank" class="caption-link">Open Fullscreen ↗</a>
             </div>
           </div>
@@ -553,6 +559,37 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
       <div class="terminal-input-row">
         <span class="term-prompt">joel@prod:~$</span>
         <input type="text" id="term-input" class="term-input" placeholder="type a command (help, projects, skills, curl, clear)..." autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
+
+  <!-- High-Definition Video Walkthrough Modal -->
+  <div class="video-modal-overlay" id="video-modal-overlay">
+    <div class="video-modal-window">
+      <div class="video-modal-header">
+        <div class="video-modal-title">
+          <span class="video-modal-badge">🎬 DEMO REEL</span>
+          <strong>JOB SeArCh — Autonomous AI Job Hunting Engine</strong>
+        </div>
+        <button class="video-modal-close" id="video-modal-close" title="Close Video">&times;</button>
+      </div>
+      <div class="video-modal-body">
+        <video id="modal-video-player" class="modal-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+          <source src="assets/demo_reel.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div class="video-modal-footer">
+        <div class="video-modal-tags">
+          <span class="proj-tag">Flutter Web</span>
+          <span class="proj-tag">Grok LLM</span>
+          <span class="proj-tag">Supabase pgvector</span>
+          <span class="proj-tag">Zero-Knowledge Vault</span>
+        </div>
+        <div class="video-modal-actions">
+          <a href="#job-search-demo" class="btn btn-sm btn-ghost" id="modal-jump-btn">Scroll to Project Details ↓</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">Launch Live App ↗</a>
+        </div>
       </div>
     </div>
   </div>

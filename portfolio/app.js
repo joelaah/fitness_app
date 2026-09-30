@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSimulator();
   initCopyButtons();
   initModal();
+  initVideoDemo();
 });
 
 // ============================================================
@@ -687,4 +688,91 @@ function initTerminal() {
     }, 450);
   }
 }
+
+// ============================================
+// VIDEO MODAL & VIDEO DEMO INTERACTIONS
+// ============================================
+function initVideoDemo() {
+  const heroVideoBtn = document.getElementById('hero-video-btn');
+  const modalOverlay = document.getElementById('video-modal-overlay');
+  const modalClose = document.getElementById('video-modal-close');
+  const modalVideo = document.getElementById('modal-video-player');
+  const modalJumpBtn = document.getElementById('modal-jump-btn');
+
+  function openVideoModal() {
+    if (modalOverlay) {
+      modalOverlay.classList.add('open');
+      if (modalVideo) {
+        modalVideo.currentTime = 0;
+        modalVideo.play().catch(() => {});
+      }
+    }
+  }
+
+  function closeVideoModal() {
+    if (modalOverlay) {
+      modalOverlay.classList.remove('open');
+      if (modalVideo) {
+        modalVideo.pause();
+      }
+    }
+  }
+
+  if (heroVideoBtn) {
+    heroVideoBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openVideoModal();
+    });
+  }
+
+  if (modalClose) {
+    modalClose.addEventListener('click', closeVideoModal);
+  }
+
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeVideoModal();
+      }
+    });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay && modalOverlay.classList.contains('open')) {
+      closeVideoModal();
+    }
+  });
+
+  if (modalJumpBtn) {
+    modalJumpBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeVideoModal();
+      scrollToJobSearchDemo();
+    });
+  }
+
+  // Smooth scroll and pulse highlight for all anchors pointing to #job-search-demo
+  document.querySelectorAll('a[href="#job-search-demo"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToJobSearchDemo();
+    });
+  });
+
+  function scrollToJobSearchDemo() {
+    const target = document.getElementById('job-search-demo');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('video-spotlight-active');
+      const inlineVideo = document.getElementById('job-search-inline-video');
+      if (inlineVideo) {
+        inlineVideo.focus();
+      }
+      setTimeout(() => {
+        target.classList.remove('video-spotlight-active');
+      }, 2500);
+    }
+  }
+}
+
 
