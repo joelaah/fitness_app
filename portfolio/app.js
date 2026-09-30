@@ -80,54 +80,57 @@ function init3DScene() {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Lights
-  const ambient = new THREE.AmbientLight(0xffffff, 0.15);
+  // Lights - Radiant and Bright
+  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
   scene.add(ambient);
 
-  const directional = new THREE.DirectionalLight(0x38bdf8, 0.6);
-  directional.position.set(3, 5, 4);
+  const directional = new THREE.DirectionalLight(0x00f0ff, 1.3);
+  directional.position.set(4, 6, 5);
   scene.add(directional);
 
-  const pointLight1 = new THREE.PointLight(0xa78bfa, 0.8, 12);
-  pointLight1.position.set(-3, 2, 3);
+  const pointLight1 = new THREE.PointLight(0xa78bfa, 1.5, 16);
+  pointLight1.position.set(-3, 3, 4);
   scene.add(pointLight1);
 
-  const pointLight2 = new THREE.PointLight(0x34d399, 0.5, 12);
-  pointLight2.position.set(3, -2, 2);
+  const pointLight2 = new THREE.PointLight(0x34d399, 1.2, 16);
+  pointLight2.position.set(3, -2, 3);
   scene.add(pointLight2);
 
-  // Materials
+  // Materials with higher transmission, clarity, and luminosity
   const glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0x111827,
-    metalness: 0.1,
-    roughness: 0.15,
-    transmission: 0.85,
+    color: 0x1e3a8a,
+    metalness: 0.15,
+    roughness: 0.08,
+    transmission: 0.92,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.88,
+    reflectivity: 0.95,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
   });
 
   const accentMat = new THREE.MeshStandardMaterial({
-    color: 0x38bdf8,
-    emissive: 0x38bdf8,
-    emissiveIntensity: 0.4,
-    metalness: 0.8,
-    roughness: 0.2,
+    color: 0x00f0ff,
+    emissive: 0x00f0ff,
+    emissiveIntensity: 0.7,
+    metalness: 0.9,
+    roughness: 0.1,
   });
 
   const purpleMat = new THREE.MeshStandardMaterial({
     color: 0xa78bfa,
-    emissive: 0xa78bfa,
-    emissiveIntensity: 0.3,
-    metalness: 0.7,
-    roughness: 0.3,
+    emissive: 0x8b5cf6,
+    emissiveIntensity: 0.6,
+    metalness: 0.8,
+    roughness: 0.2,
   });
 
   const greenMat = new THREE.MeshStandardMaterial({
     color: 0x34d399,
-    emissive: 0x34d399,
-    emissiveIntensity: 0.3,
-    metalness: 0.7,
-    roughness: 0.3,
+    emissive: 0x10b981,
+    emissiveIntensity: 0.6,
+    metalness: 0.8,
+    roughness: 0.2,
   });
 
   // Central sphere — represents the RAG core
@@ -137,7 +140,7 @@ function init3DScene() {
 
   // Inner wireframe
   const wireGeo = new THREE.IcosahedronGeometry(1.15, 1);
-  const wireMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.15 });
+  const wireMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.35 });
   const wireframe = new THREE.Mesh(wireGeo, wireMat);
   scene.add(wireframe);
 
@@ -580,14 +583,14 @@ function initTerminal() {
 <div class="term-line">   • Live: <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="term-accent">https://joelaah.github.io/fitness_app/</a></div>
 <br>
 <div class="term-line"><span class="term-cyan">2. JOB SeArCh</span> (Autonomous Semantic Career Engine)</div>
-<div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Gemini 2.0, Zero-Knowledge Vault</div>
+<div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Grok LLM, Zero-Knowledge Vault</div>
 <div class="term-line">   • Video Reel: 1080p full demo with neural AI voiceover in assets/demo_reel.mp4</div>
 <div class="term-line">   • Live: <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="term-cyan">https://joelaah.github.io/Job-Searcher/</a></div>`,
 
     skills: () => `
 <div class="term-line"><span class="term-cyan">Languages:</span> Dart, Python 3.12, JavaScript (ES6+), SQL, HTML5/CSS3</div>
 <div class="term-line"><span class="term-cyan">Frontend:</span> Flutter (Web & Mobile), BLoC / Riverpod, CanvasKit, Glassmorphism UI</div>
-<div class="term-line"><span class="term-cyan">AI & Vector:</span> Supabase pgvector, Qdrant Cloud, Cohere Rerank v3.5, FastEmbed (768d), Gemini 2.0</div>
+<div class="term-line"><span class="term-cyan">AI & Vector:</span> Grok LLM (Groq LPU), Supabase pgvector, Qdrant Cloud, Cohere Rerank v3.5, FastEmbed (768d), Gemini Flash</div>
 <div class="term-line"><span class="term-cyan">Backend:</span> FastAPI, Pydantic v2, Uvicorn, SlowAPI, REST microservices</div>
 <div class="term-line"><span class="term-cyan">Databases:</span> PostgreSQL 15, HNSW cosine index, Firestore, HTML5 localStorage</div>
 <div class="term-line"><span class="term-cyan">Security:</span> Zero-Knowledge client-side RAM vaulting, Anti-SSRF crawler defense</div>`,
