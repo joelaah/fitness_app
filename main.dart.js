@@ -8241,7 +8241,7 @@ s=q}while(true)switch(s){case 0:if($.af==null)A.aH4()
 $.af.toString
 q=3
 s=6
-return A.t(A.an7("sb_publishable_nSGbvUYVau8Xmwm8A0Z7Zw_N01ydmzk","https://ogbqkmujgmukbxxpjdsa.supabase.co"),$async$KJ)
+return A.t(A.an7("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nYnFrbXVqZ211a2J4eHBqZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3Mzg2OTgsImV4cCI6MjEwNTMxNDY5OH0.Kw3pXjB60oau3ZIEfOC5leg1iYbmzgOEFkv42CHLzK8","https://ogbqkmujgmukbxxpjdsa.supabase.co"),$async$KJ)
 case 6:$.aGO=!0
 n=$.j0()
 m=n.b
