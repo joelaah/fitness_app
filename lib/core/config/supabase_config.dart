@@ -8,7 +8,8 @@ class SupabaseConfig {
 
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'sb_publishable_nSGbvUYVau8Xmwm8A0Z7Zw_N01ydmzk',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nYnFrbXVqZ211a2J4eHBqZHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3Mzg2OTgsImV4cCI6MjEwNTMxNDY5OH0.Kw3pXjB60oau3ZIEfOC5leg1iYbmzgOEFkv42CHLzK8',
   );
 
   static bool get isConfigured =>

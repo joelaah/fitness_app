@@ -81,6 +81,27 @@ Recruiters and hiring managers can explore the app immediately without onboardin
 
 ---
 
+## 🔐 Data Storage & Session Architecture
+
+PulseFit AI demonstrates production-grade data persistence and session management across multiple layers:
+
+| Layer | Technology | What It Stores |
+|:--|:--|:--|
+| **Anonymous Auth** | Supabase GoTrue (`signInAnonymously()`) | Per-device identity with auto-generated UUID — no signup form required |
+| **Cloud Database** | Supabase PostgreSQL + RLS (5 tables, 14 policies) | Workout sessions, exercises, sets, profiles, AI recommendations |
+| **Local Persistence** | `SharedPreferences` | Routine templates, workout history, offline cache |
+| **Session Tokens** | Supabase JWT refresh tokens | Survive app restarts and browser refreshes automatically |
+| **Row-Level Security** | `auth.uid()` bindings across all tables | Users can only read/write their own data — enforced at DB level |
+| **PWA Installable** | Service worker + `manifest.json` | Installable as native app on mobile & desktop with offline support |
+
+### Security Model
+- **Zero email/password friction**: Each device auto-creates a Supabase anonymous identity on first launch
+- **Cloud sync with isolation**: Workout data syncs to Postgres but is locked to the device's `auth.uid()` via RLS
+- **Offline-first**: `SharedPreferences` caches routines locally — the app works without network connectivity
+- **JWT lifecycle**: Supabase manages token refresh automatically; sessions persist across restarts
+
+---
+
 ## 📁 Repository Structure
 
 ```
