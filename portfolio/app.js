@@ -1,21 +1,66 @@
 // ============================================================
-// PulseFit Portfolio — Interactive Engine
+// Joel Pachuau — Systems Portfolio Interactive Engine
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+  initLenis();
+  initSpotlight();
+  initTerminal();
   initNav();
   init3DScene();
   initArchitecture();
   initSimulator();
   initCopyButtons();
   initModal();
+  initVideoDemo();
 });
 
 // ============================================================
-// 1. NAVIGATION — scroll blur
+// 1. LENIS — Smooth Momentum Scrolling
+// ============================================================
+function initLenis() {
+  if (typeof Lenis === 'undefined') return;
+  try {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.5,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  } catch (e) {
+    console.warn('Lenis smooth scroll failed to initialize:', e);
+  }
+}
+
+// ============================================================
+// 2. SPOTLIGHT — Dynamic Mouse Radial Card Illumination
+// ============================================================
+function initSpotlight() {
+  const cards = document.querySelectorAll('.spotlight-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+}
+
+// ============================================================
+// 3. NAVIGATION — scroll blur
 // ============================================================
 function initNav() {
   const nav = document.getElementById('nav');
+  if (!nav) return;
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
   });
@@ -36,54 +81,57 @@ function init3DScene() {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Lights
-  const ambient = new THREE.AmbientLight(0xffffff, 0.15);
+  // Lights - Radiant and Bright
+  const ambient = new THREE.AmbientLight(0xffffff, 0.45);
   scene.add(ambient);
 
-  const directional = new THREE.DirectionalLight(0x38bdf8, 0.6);
-  directional.position.set(3, 5, 4);
+  const directional = new THREE.DirectionalLight(0x00f0ff, 1.3);
+  directional.position.set(4, 6, 5);
   scene.add(directional);
 
-  const pointLight1 = new THREE.PointLight(0xa78bfa, 0.8, 12);
-  pointLight1.position.set(-3, 2, 3);
+  const pointLight1 = new THREE.PointLight(0xa78bfa, 1.5, 16);
+  pointLight1.position.set(-3, 3, 4);
   scene.add(pointLight1);
 
-  const pointLight2 = new THREE.PointLight(0x34d399, 0.5, 12);
-  pointLight2.position.set(3, -2, 2);
+  const pointLight2 = new THREE.PointLight(0x34d399, 1.2, 16);
+  pointLight2.position.set(3, -2, 3);
   scene.add(pointLight2);
 
-  // Materials
+  // Materials with higher transmission, clarity, and luminosity
   const glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0x111827,
-    metalness: 0.1,
-    roughness: 0.15,
-    transmission: 0.85,
+    color: 0x1e3a8a,
+    metalness: 0.15,
+    roughness: 0.08,
+    transmission: 0.92,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.88,
+    reflectivity: 0.95,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
   });
 
   const accentMat = new THREE.MeshStandardMaterial({
-    color: 0x38bdf8,
-    emissive: 0x38bdf8,
-    emissiveIntensity: 0.4,
-    metalness: 0.8,
-    roughness: 0.2,
+    color: 0x00f0ff,
+    emissive: 0x00f0ff,
+    emissiveIntensity: 0.7,
+    metalness: 0.9,
+    roughness: 0.1,
   });
 
   const purpleMat = new THREE.MeshStandardMaterial({
     color: 0xa78bfa,
-    emissive: 0xa78bfa,
-    emissiveIntensity: 0.3,
-    metalness: 0.7,
-    roughness: 0.3,
+    emissive: 0x8b5cf6,
+    emissiveIntensity: 0.6,
+    metalness: 0.8,
+    roughness: 0.2,
   });
 
   const greenMat = new THREE.MeshStandardMaterial({
     color: 0x34d399,
-    emissive: 0x34d399,
-    emissiveIntensity: 0.3,
-    metalness: 0.7,
-    roughness: 0.3,
+    emissive: 0x10b981,
+    emissiveIntensity: 0.6,
+    metalness: 0.8,
+    roughness: 0.2,
   });
 
   // Central sphere — represents the RAG core
@@ -93,7 +141,7 @@ function init3DScene() {
 
   // Inner wireframe
   const wireGeo = new THREE.IcosahedronGeometry(1.15, 1);
-  const wireMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.15 });
+  const wireMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.35 });
   const wireframe = new THREE.Mesh(wireGeo, wireMat);
   scene.add(wireframe);
 
@@ -143,6 +191,19 @@ function init3DScene() {
   const particles = new THREE.Points(particlesGeo, particlesMat);
   scene.add(particles);
 
+  // Dynamic constellation connections (origin -> orbiting node)
+  const lineGeo = new THREE.BufferGeometry();
+  const linePositions = new Float32Array(nodeData.length * 2 * 3);
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x00e5ff,
+    transparent: true,
+    opacity: 0.3,
+    blending: THREE.AdditiveBlending
+  });
+  const constellation = new THREE.LineSegments(lineGeo, lineMat);
+  scene.add(constellation);
+
   // Mouse interaction
   let mouseX = 0, mouseY = 0;
   window.addEventListener('mousemove', (e) => {
@@ -167,12 +228,17 @@ function init3DScene() {
     wireframe.rotation.x = time * 0.08 + mouseY * 0.15;
     wireframe.rotation.y = -time * 0.12 + mouseX * 0.15;
 
-    nodes.forEach(n => {
+    const posAttr = lineGeo.attributes.position;
+    nodes.forEach((n, idx) => {
       n.userData.angle += n.userData.speed * 0.01;
       n.position.x = Math.cos(n.userData.angle) * n.userData.orbit;
       n.position.z = Math.sin(n.userData.angle) * n.userData.orbit;
       n.position.y = n.userData.yOff + Math.sin(time * n.userData.speed + n.userData.angle) * 0.3;
+
+      posAttr.setXYZ(idx * 2, 0, 0, 0);
+      posAttr.setXYZ(idx * 2 + 1, n.position.x, n.position.y, n.position.z);
     });
+    posAttr.needsUpdate = true;
 
     ring1.rotation.z = time * 0.05;
     ring2.rotation.z = -time * 0.03;
@@ -460,3 +526,270 @@ function initModal() {
     if (e.key === 'Escape') close();
   });
 }
+
+// ============================================================
+// 7. TERMINAL — Interactive Developer Shell & Benchmark CLI
+// ============================================================
+function initTerminal() {
+  const overlay = document.getElementById('terminal-overlay');
+  const openBtn = document.getElementById('open-terminal');
+  const floatingBtn = document.getElementById('floating-cli');
+  const closeBtn = document.getElementById('term-close');
+  const clearBtn = document.getElementById('term-max');
+  const minBtn = document.getElementById('term-min');
+  const input = document.getElementById('term-input');
+  const body = document.getElementById('term-body');
+
+  if (!overlay || !input || !body) return;
+
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+  }
+
+  function close() {
+    overlay.classList.remove('open');
+  }
+
+  if (openBtn) openBtn.addEventListener('click', open);
+  if (floatingBtn) floatingBtn.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (minBtn) minBtn.addEventListener('click', close);
+  if (clearBtn) clearBtn.addEventListener('click', () => { body.innerHTML = ''; });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+  });
+
+  const commands = {
+    help: () => `
+<div class="term-line"><span class="term-cyan">Available System Commands:</span></div>
+<div class="term-line">  <span class="term-accent">projects</span>    — List production AI systems & interactive learning hubs</div>
+<div class="term-line">  <span class="term-accent">arcade</span>      — Launch Systems Arcade & Interview Hub (104 Q&As, 7 Simulators)</div>
+<div class="term-line">  <span class="term-accent">skills</span>      — Inspect full engineering stack & vector DB experience</div>
+<div class="term-line">  <span class="term-accent">curl</span>        — Benchmark API latency (<span class="term-green">curl /api/match</span>)</div>
+<div class="term-line">  <span class="term-accent">metrics</span>     — View production performance telemetry</div>
+<div class="term-line">  <span class="term-accent">contact</span>     — Direct email, GitHub, and booking channels</div>
+<div class="term-line">  <span class="term-accent">whoami</span>      — View candidate biography and engineering ethos</div>
+<div class="term-line">  <span class="term-accent">clear</span>       — Wipe the terminal screen buffer</div>
+<div class="term-line">  <span class="term-accent">exit</span>        — Close this terminal window</div>`,
+
+    projects: () => `
+<div class="term-line"><span class="term-cyan">1. PulseFit AI</span> (Production Two-Stage RAG)</div>
+<div class="term-line">   • Stack: Flutter Web, FastAPI, Qdrant Cloud HNSW, Cohere v3.5, Gemini Flash</div>
+<div class="term-line">   • Metrics: &lt;15ms vector recall, 0% arithmetic hallucination, 85% token reduction</div>
+<div class="term-line">   • Live: <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="term-accent">https://joelaah.github.io/fitness_app/</a></div>
+<br>
+<div class="term-line"><span class="term-cyan">2. JOB SeArCh</span> (Autonomous Semantic Career Engine)</div>
+<div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Grok LLM, Zero-Knowledge Vault</div>
+<div class="term-line">   • Video Reel: 1080p full demo with neural AI voiceover in assets/demo_reel.mp4</div>
+<div class="term-line">   • Live: <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="term-cyan">https://joelaah.github.io/Job-Searcher/</a></div>
+<br>
+<div class="term-line"><span class="term-cyan">3. Systems Arcade Hub</span> (Zero-to-Hero Architecture & Interview Lab)</div>
+<div class="term-line">   • Content: 104 Systems Q&As, 7 Interactive Simulation Labs, 3-Min Blitz Mode</div>
+<div class="term-line">   • Design Rationale: Gamified Neo-Brutalist arcade style combating cognitive working memory exhaustion</div>
+<div class="term-line">   • Live: <a href="interactive_learning_hub.html" target="_blank" class="term-accent">Open Systems Arcade ↗</a></div>`,
+
+    arcade: () => `
+<div class="term-line"><span class="term-cyan">⚡ Systems Arcade — Zero-to-Hero Interactive Learning Hub</span></div>
+<div class="term-line">   • <span class="term-accent">Curriculum:</span> 104 Battle-Tested Interview Q&As across 6 engineering domains</div>
+<div class="term-line">   • <span class="term-accent">Simulators:</span> 7 Animated Labs (PostgreSQL MVCC, 768d Vectors, Two-Stage RAG, Anti-SSRF, Zero-Knowledge Vault, Token Bucket, BLoC State)</div>
+<div class="term-line">   • <span class="term-accent">Cognitive Science:</span> Vibrant cartoon styling and 8-bit cues engineered to combat Cowan's working memory exhaustion (4±1 limit) and sustain focus.</div>
+<div class="term-line">   • <span class="term-green">Live Arcade:</span> <a href="interactive_learning_hub.html" target="_blank" class="term-accent">Launch Systems Arcade Hub ↗</a></div>
+<div class="term-line">   • <span class="term-cyan">Guides:</span> <a href="https://github.com/joelaah/fitness_app/blob/main/MASTER_100_INTERVIEW_QUESTIONS_AND_ANSWERS.md" target="_blank" class="term-cyan">100 Q&A Master Reference</a> | <a href="https://github.com/joelaah/fitness_app/blob/main/ZERO_TO_HERO_SYSTEMS_AND_INTERVIEW_GUIDE.md" target="_blank" class="term-cyan">Zero-to-Hero Systems Guide</a></div>`,
+
+    hub: () => commands.arcade(),
+    learn: () => commands.arcade(),
+
+    skills: () => `
+<div class="term-line"><span class="term-cyan">Languages:</span> Dart, Python 3.12, JavaScript (ES6+), SQL, HTML5/CSS3</div>
+<div class="term-line"><span class="term-cyan">Frontend:</span> Flutter (Web & Mobile), BLoC / Riverpod, CanvasKit, Glassmorphism UI</div>
+<div class="term-line"><span class="term-cyan">AI & Vector:</span> Grok LLM (Groq LPU), Supabase pgvector, Qdrant Cloud, Cohere Rerank v3.5, FastEmbed (768d), Gemini Flash</div>
+<div class="term-line"><span class="term-cyan">Backend:</span> FastAPI, Pydantic v2, Uvicorn, SlowAPI, REST microservices</div>
+<div class="term-line"><span class="term-cyan">Databases:</span> PostgreSQL 15, HNSW cosine index, Firestore, HTML5 localStorage</div>
+<div class="term-line"><span class="term-cyan">Security:</span> Zero-Knowledge client-side RAM vaulting, Anti-SSRF crawler defense</div>`,
+
+    metrics: () => `
+<div class="term-line"><span class="term-green">✔ Vector Recall:</span> &lt;15ms across 768-dim dense embedding indexes</div>
+<div class="term-line"><span class="term-green">✔ Math Accuracy:</span> 0% LLM arithmetic hallucination (Python volume ground truth)</div>
+<div class="term-line"><span class="term-green">✔ Token Optimization:</span> -85% context bloat reduction via cross-encoder filtering</div>
+<div class="term-line"><span class="term-green">✔ Client Response:</span> 0ms perceived logging latency with offline-first persistence</div>`,
+
+    whoami: () => `
+<div class="term-line"><span class="term-accent">Joel Pachuau</span> — Full-Stack & AI Systems Engineer based in India (GMT+5:30).</div>
+<div class="term-line">Specialized in coupling high-dimensional vector search with deterministic microservices so AI applications behave predictably in production.</div>`,
+
+    contact: () => `
+<div class="term-line">✉ Email:   <a href="mailto:joelapachuau64@gmail.com" class="term-accent">joelapachuau64@gmail.com</a></div>
+<div class="term-line">💻 GitHub:  <a href="https://github.com/joelaah" target="_blank" class="term-accent">github.com/joelaah</a></div>
+<div class="term-line">📱 Phone:   +91 9366797268</div>`,
+
+    clear: () => {
+      body.innerHTML = '';
+      return '';
+    },
+
+    exit: () => {
+      close();
+      return '<div class="term-line term-dim">Terminal session terminated.</div>';
+    }
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const raw = input.value.trim();
+      input.value = '';
+      if (!raw) return;
+
+      // Echo command
+      const echo = document.createElement('div');
+      echo.className = 'term-line';
+      echo.innerHTML = `<span class="term-prompt">joel@prod:~$</span> <span class="term-cmd">${raw}</span>`;
+      body.appendChild(echo);
+
+      const parts = raw.split(' ');
+      const cmd = parts[0].toLowerCase();
+
+      if (cmd === 'curl' || raw.startsWith('curl')) {
+        simulateCurl(parts[1] || '/api/match');
+      } else if (commands[cmd]) {
+        const out = commands[cmd]();
+        if (out) {
+          const res = document.createElement('div');
+          res.innerHTML = out;
+          body.appendChild(res);
+        }
+      } else {
+        const err = document.createElement('div');
+        err.className = 'term-line term-dim';
+        err.innerHTML = `zsh: command not found: ${cmd}. Type <span class="term-accent">'help'</span> for instructions.`;
+        body.appendChild(err);
+      }
+
+      body.scrollTop = body.scrollHeight;
+    }
+  });
+
+  function simulateCurl(path) {
+    const loading = document.createElement('div');
+    loading.className = 'term-line term-dim';
+    loading.textContent = `> HTTP/2 GET ${path}... establishing TLS handshake`;
+    body.appendChild(loading);
+    body.scrollTop = body.scrollHeight;
+
+    setTimeout(() => {
+      loading.remove();
+      const output = document.createElement('div');
+      output.className = 'term-line';
+      output.innerHTML = `
+<span class="term-green">HTTP/2 200 OK</span>
+<span class="term-dim">date:</span> ${new Date().toUTCString()}
+<span class="term-dim">content-type:</span> application/json
+<span class="term-dim">x-vector-recall-ms:</span> 12.4ms
+<span class="term-dim">x-rerank-ms:</span> 34.1ms
+
+<span class="term-cyan">{</span>
+  <span class="term-accent">"status"</span>: <span class="term-green">"success"</span>,
+  <span class="term-accent">"target_role"</span>: <span class="term-green">"Senior AI Systems Engineer"</span>,
+  <span class="term-accent">"dimensions"</span>: <span class="term-purple">768</span>,
+  <span class="term-accent">"cosine_similarity"</span>: <span class="term-purple">0.984</span>,
+  <span class="term-accent">"cross_encoder_score"</span>: <span class="term-purple">0.992</span>,
+  <span class="term-accent">"hallucination_risk"</span>: <span class="term-purple">0.0%</span>
+<span class="term-cyan">}</span>`;
+      body.appendChild(output);
+      body.scrollTop = body.scrollHeight;
+    }, 450);
+  }
+}
+
+// ============================================
+// VIDEO MODAL & VIDEO DEMO INTERACTIONS
+// ============================================
+function initVideoDemo() {
+  const heroVideoBtn = document.getElementById('hero-video-btn');
+  const modalOverlay = document.getElementById('video-modal-overlay');
+  const modalClose = document.getElementById('video-modal-close');
+  const modalVideo = document.getElementById('modal-video-player');
+  const modalJumpBtn = document.getElementById('modal-jump-btn');
+
+  function openVideoModal() {
+    if (modalOverlay) {
+      modalOverlay.classList.add('open');
+      if (modalVideo) {
+        modalVideo.currentTime = 0;
+        modalVideo.play().catch(() => {});
+      }
+    }
+  }
+
+  function closeVideoModal() {
+    if (modalOverlay) {
+      modalOverlay.classList.remove('open');
+      if (modalVideo) {
+        modalVideo.pause();
+      }
+    }
+  }
+
+  if (heroVideoBtn) {
+    heroVideoBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openVideoModal();
+    });
+  }
+
+  if (modalClose) {
+    modalClose.addEventListener('click', closeVideoModal);
+  }
+
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeVideoModal();
+      }
+    });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalOverlay && modalOverlay.classList.contains('open')) {
+      closeVideoModal();
+    }
+  });
+
+  if (modalJumpBtn) {
+    modalJumpBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeVideoModal();
+      scrollToJobSearchDemo();
+    });
+  }
+
+  // Smooth scroll and pulse highlight for all anchors pointing to #job-search-demo
+  document.querySelectorAll('a[href="#job-search-demo"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToJobSearchDemo();
+    });
+  });
+
+  function scrollToJobSearchDemo() {
+    const target = document.getElementById('job-search-demo');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('video-spotlight-active');
+      const inlineVideo = document.getElementById('job-search-inline-video');
+      if (inlineVideo) {
+        inlineVideo.focus();
+      }
+      setTimeout(() => {
+        target.classList.remove('video-spotlight-active');
+      }, 2500);
+    }
+  }
+}
+
+

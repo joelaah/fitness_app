@@ -19,15 +19,21 @@
         <span>Joel Pachuau</span>
       </div>
       <ul class="nav-links">
+        <li><a href="#demo-reel-spotlight" class="nav-video-btn">🎬 Video Demo</a></li>
+        <li><a href="interactive_learning_hub.html" target="_blank" class="nav-arcade-btn">🕹️ Systems Arcade ↗</a></li>
         <li><a href="#metrics">Metrics</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#simulator">Simulator</a></li>
         <li><a href="#stack">Stack</a></li>
+        <li><a href="#job-search-demo" class="nav-video-btn">🎬 Video Reel</a></li>
         <li><a href="#projects">Systems</a></li>
         <li><a href="#summary">Summary</a></li>
         <li><a href="resume.html" target="_blank" style="color:var(--accent); font-weight:600;">Resume ↗</a></li>
       </ul>
-      <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      <div class="nav-actions">
+        <button class="nav-cli-btn" id="open-terminal" title="Launch Interactive Developer CLI">>_ CLI</button>
+        <button class="nav-cta" id="open-modal">✉ Hire Me</button>
+      </div>
     </div>
   </nav>
 
@@ -39,15 +45,16 @@
           <span class="dot"></span>
           Open to Opportunities
         </div>
-        <h1>Building <span class="accent">Intelligent Systems</span> That Don't Hallucinate.</h1>
+        <h1>Building <span class="accent">Intelligent Systems</span> with Neural Speed & Precision.</h1>
         <p class="hero-desc">
-          I'm Joel — I design resilient full-stack applications where deterministic engineering meets neural intelligence. Featured production systems include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot) and <strong>JOB SeArCh</strong> (autonomous AI career matching engine).
+          I'm Joel — I design resilient full-stack applications where deterministic systems engineering meets state-of-the-art neural intelligence. Featured production deployments include <strong>PulseFit AI</strong> (two-stage RAG fitness copilot), <strong>JOB SeArCh</strong> (autonomous career discovery engine powered by <strong>Grok LLM</strong> & Supabase pgvector), and the <strong>Systems Arcade Hub</strong> (interactive distributed systems lab with 104 battle-tested interview Q&As).
         </p>
         <div class="hero-btns">
-          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI Demo</a>
-          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 JOB SeArCh Demo</a>
-          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 View Resume</a>
-          <a href="#projects" class="btn btn-ghost">Explore Systems ↓</a>
+          <a href="#demo-reel-spotlight" class="btn btn-video-glow" id="hero-video-btn">🎬 Watch Job Search Video (90s Demo)</a>
+          <a href="interactive_learning_hub.html" target="_blank" class="btn btn-arcade-glow">🕹️ Systems Arcade (104 Q&As) ↗</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan">🎯 Live App Demo</a>
+          <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="btn btn-fill">⚡ PulseFit AI</a>
+          <a href="resume.html" target="_blank" class="btn btn-ghost">📄 Resume</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
@@ -59,8 +66,8 @@
             <span class="hero-stat-label">Math Hallucination</span>
           </div>
           <div class="hero-stat">
-            <span class="hero-stat-value">2 Apps</span>
-            <span class="hero-stat-label">Production Deployed</span>
+            <span class="hero-stat-value">104 Q&As</span>
+            <span class="hero-stat-label">Systems Arcade Hub</span>
           </div>
         </div>
       </div>
@@ -76,25 +83,162 @@
   <section id="metrics" class="section" style="padding-top: 40px;">
     <div class="container">
       <div class="metrics">
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">< 15ms</div>
           <div class="metric-name">Vector Retrieval</div>
           <div class="metric-detail">Qdrant Cloud HNSW index across 768-dim embeddings</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">0%</div>
           <div class="metric-name">Numerical Hallucination</div>
           <div class="metric-detail">Tonnage and set math computed deterministically in Python</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">−85%</div>
           <div class="metric-name">Token Bloat Reduction</div>
           <div class="metric-detail">Cohere cross-encoder filters 25 candidates to top 3</div>
         </div>
-        <div class="metric">
+        <div class="metric spotlight-card">
           <div class="metric-val">100%</div>
           <div class="metric-name">Offline-First Logging</div>
           <div class="metric-detail">Flutter Web → HTML5 localStorage with async cloud sync</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       FEATURED VIDEO DEMONSTRATION SPOTLIGHT
+       ============================================ -->
+  <section id="demo-reel-spotlight" class="section video-spotlight-section">
+    <div class="container">
+      <div class="spotlight-banner">
+        <div class="spotlight-header">
+          <div class="spotlight-badge">
+            <span class="ribbon-live-dot"></span>
+            <span>SYSTEM WALKTHROUGH · 1080P 60FPS</span>
+          </div>
+          <h2 class="spotlight-title">JOB SeArCh — Autonomous Career Matching Engine Demo Reel</h2>
+          <p class="spotlight-desc">
+            Dual-stage AI pipeline powered by <strong>Grok LLM</strong>, Supabase pgvector HNSW latent space matching, real-time headless ATS scraping (Ashby, Greenhouse, Lever), and a zero-knowledge local credential vault.
+          </p>
+        </div>
+
+        <div class="spotlight-player-wrap">
+          <div class="spotlight-player-bar">
+            <div class="player-bar-left">
+              <span class="player-dot red"></span>
+              <span class="player-dot yellow"></span>
+              <span class="player-dot green"></span>
+              <span class="player-title">job_search_demonstration_1080p.mp4</span>
+            </div>
+            <div class="player-bar-right">
+              <span class="player-tag">1080p 60FPS</span>
+              <span class="player-tag">Grok LLM</span>
+              <span class="player-tag">ChristopherNeural AI</span>
+            </div>
+          </div>
+          <video class="spotlight-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+            <source src="assets/demo_reel.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="spotlight-player-footer">
+            <div class="spotlight-audio-pill">
+              <span class="audio-icon">🔊</span>
+              <span class="audio-text"><strong>Audio Included:</strong> 90s ChristopherNeural Walkthrough (Click video to play sound)</span>
+            </div>
+            <div class="spotlight-actions">
+              <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-cyan btn-sm">🎯 Launch Live Web App ↗</a>
+              <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-ghost btn-sm">GitHub Repo ↗</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       INTERACTIVE SYSTEMS ARCHITECTURE & INTERVIEW ARCADE
+       ============================================ -->
+  <section id="systems-arcade" class="section arcade-section">
+    <div class="container">
+      <div class="arcade-spotlight-card spotlight-card">
+        <div class="arcade-header-wrap">
+          <div>
+            <div class="arcade-badge-cluster">
+              <span class="badge badge-arcade">🕹️ Interactive Learning Hub</span>
+              <span class="badge badge-neo">🎨 Neo-Brutalist Arcade</span>
+              <span class="badge badge-green">104 Interview Q&As</span>
+              <span class="badge badge-accent">7 Simulation Labs</span>
+              <span class="badge badge-arcade">⚡ 3-Min Blitz Pacing</span>
+            </div>
+            <h2 class="arcade-title">⚡ Systems Arcade — Zero-to-Hero Interactive Architecture & Interview Hub</h2>
+            <p class="arcade-tagline">Gamified full-stack engineering laboratory designed for rapid mastery of dense distributed systems & high-dimensional vector search.</p>
+          </div>
+          <div class="spotlight-actions">
+            <a href="interactive_learning_hub.html" target="_blank" class="btn btn-arcade-glow">🕹️ Launch Systems Hub ↗</a>
+          </div>
+        </div>
+
+        <!-- Pedagogical and Cognitive Science Rationale Box -->
+        <div class="arcade-cognitive-box">
+          <div class="arcade-cog-title">
+            <span>🧠</span>
+            <h4>Why the Cartoonish, Colourful Neo-Brutalist Arcade Design?</h4>
+          </div>
+          <p class="arcade-cog-desc">
+            Studying high-density systems engineering (PostgreSQL MVCC visibility matrices, 768-dimensional HNSW vector trigonometry, Two-Stage RAG cross-encoders, Anti-SSRF cloud defense, and Zero-Knowledge client-side memory vaults) imposes catastrophic cognitive load. Traditional monochrome documentation causes rapid <strong>working memory exhaustion</strong> and <strong>vigilance decrements within 5–7 minutes</strong> of passive reading.
+          </p>
+          <div class="arcade-cog-points">
+            <div class="arcade-cog-item">
+              <h5>⚡ Cowan's Limit & High Element Interactivity</h5>
+              <p>Under Nelson Cowan’s Embedded-Processes model, the conscious focus of attention holds only <strong>4 ± 1 chunks</strong>. Complex distributed consensus and vector math exceed this boundary instantly. The arcade breaks dense theory into bite-sized 3-to-7 minute micro-modules to eliminate prefrontal cortex glutamate saturation.</p>
+            </div>
+            <div class="arcade-cog-item">
+              <h5>🎯 Dopamine Prediction Error & Sustained Attention</h5>
+              <p>The vibrant, saturated colour palette, 8-bit audio chimes, tactile chunky neo-brutalist buttons, and rapid confetti feedback trigger positive <strong>dopamine prediction errors</strong>. This neurobiological feedback loop combats digital screen fatigue and transforms dry architectural invariants into high-arousal active recall.</p>
+            </div>
+            <div class="arcade-cog-item">
+              <h5>🧪 Tactile Real-Time State Simulations</h5>
+              <p>Passive reading creates the "illusion of competence." The 7 interactive simulator labs force real-time manipulation of transaction timelines, vector distance thresholds, and SSRF payload filters, anchoring abstract systems knowledge into automated long-term memory schemas.</p>
+            </div>
+            <div class="arcade-cog-item">
+              <h5>⏱️ 3-Minute Interview Blitz Mode</h5>
+              <p>Engineered around rapid-fire cognitive retrieval under mild timed stress, simulating high-pressure FAANG & Tier-1 technical screen interviews while maintaining peak alertness and zero test anxiety.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Core Pillars Grid -->
+        <div class="arcade-pillars-grid">
+          <div class="arcade-pillar-card">
+            <div class="arcade-pillar-icon">🎯</div>
+            <div class="arcade-pillar-title">104 Battle-Tested Q&As</div>
+            <p class="arcade-pillar-text">Categorized across 6 engineering domains with code snippets, failure modes, trade-offs, and common interviewer traps.</p>
+          </div>
+          <div class="arcade-pillar-card">
+            <div class="arcade-pillar-icon">🧪</div>
+            <div class="arcade-pillar-title">7 Animated Simulators</div>
+            <p class="arcade-pillar-text">Interactive playgrounds for PostgreSQL MVCC, 768-D Vector Cosine math, Two-Stage RAG, Anti-SSRF defense, and RAM vaults.</p>
+          </div>
+          <div class="arcade-pillar-card">
+            <div class="arcade-pillar-icon">⚡</div>
+            <div class="arcade-pillar-title">3-Minute Blitz Mode</div>
+            <p class="arcade-pillar-text">Arcade countdown timer with 8-bit sound effects, instant scoring, combo streaks, and celebratory confetti animations.</p>
+          </div>
+          <div class="arcade-pillar-card">
+            <div class="arcade-pillar-icon">📐</div>
+            <div class="arcade-pillar-title">Deep System Blueprints</div>
+            <p class="arcade-pillar-text">Production architecture schematics, ASCII topologies, latency breakdowns, and quantitative interview trade-off formulas.</p>
+          </div>
+        </div>
+
+        <!-- Hub Action Buttons -->
+        <div class="arcade-actions">
+          <a href="interactive_learning_hub.html" target="_blank" class="btn btn-arcade-glow">🕹️ Open Interactive Learning Hub (Full Arcade) ↗</a>
+          <a href="https://github.com/joelaah/fitness_app/blob/main/MASTER_100_INTERVIEW_QUESTIONS_AND_ANSWERS.md" target="_blank" class="btn btn-ghost">📄 100 Q&A Master Reference Guide ↗</a>
+          <a href="https://github.com/joelaah/fitness_app/blob/main/ZERO_TO_HERO_SYSTEMS_AND_INTERVIEW_GUIDE.md" target="_blank" class="btn btn-ghost">📘 Zero-to-Hero Architecture Guide ↗</a>
+          <a href="https://github.com/joelaah/fitness_app/blob/main/ATTENTION_SPAN_AND_LEARNING_PROTOCOL.md" target="_blank" class="btn btn-ghost">🧠 Cognitive Science Protocol ↗</a>
         </div>
       </div>
     </div>
@@ -276,7 +420,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
       </div>
 
       <div class="stack-grid">
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-blue">📱</span> Client</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">Flutter 3.x</span><span class="stack-item-role">Web & Mobile</span></div>
@@ -285,7 +429,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">Dart Async</span><span class="stack-item-role">Non-blocking Sync</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-green">⚡</span> Backend</div>
           <div class="stack-list">
             <div class="stack-item"><span class="stack-item-name">FastAPI</span><span class="stack-item-role">Async REST</span></div>
@@ -294,13 +438,14 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <div class="stack-item"><span class="stack-item-name">JWT Auth</span><span class="stack-item-role">Anonymous Onboarding</span></div>
           </div>
         </div>
-        <div class="stack-card">
+        <div class="stack-card spotlight-card">
           <div class="stack-card-title"><span class="icon icon-purple">🧠</span> AI Pipeline</div>
           <div class="stack-list">
+            <div class="stack-item"><span class="stack-item-name">Grok LLM</span><span class="stack-item-role">Ultra-Fast Inference</span></div>
+            <div class="stack-item"><span class="stack-item-name">Supabase pgvector</span><span class="stack-item-role">HNSW Latent Space</span></div>
             <div class="stack-item"><span class="stack-item-name">Qdrant Cloud</span><span class="stack-item-role">HNSW Vector DB</span></div>
             <div class="stack-item"><span class="stack-item-name">Cohere v3.5</span><span class="stack-item-role">Cross-Encoder</span></div>
             <div class="stack-item"><span class="stack-item-name">Gemini-Embed-2</span><span class="stack-item-role">768-dim Vectors</span></div>
-            <div class="stack-item"><span class="stack-item-name">Gemini Flash</span><span class="stack-item-role">Grounded Gen</span></div>
           </div>
         </div>
       </div>
@@ -318,7 +463,7 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
 
       <div class="projects-grid">
         <!-- Project 1: PulseFit AI -->
-        <div class="proj-card">
+        <div class="proj-card spotlight-card">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-accent">Production AI</span>
@@ -327,6 +472,15 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             <h3 class="proj-title">PulseFit AI</h3>
             <p class="proj-tagline">RAG-Powered Fitness Copilot & Deterministic Intelligence Engine</p>
           </div>
+
+          <div class="proj-media-wrap">
+            <img src="pulsefit_real_thumbnail.png" alt="PulseFit AI Interface" style="width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:var(--radius) var(--radius) 0 0;" />
+            <div class="proj-media-caption">
+              <span>⚡ PulseFit AI Production UI & Workout Analytics</span>
+              <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="caption-link">Open Live App ↗</a>
+            </div>
+          </div>
+
           <p class="proj-desc">
             A production two-stage RAG application eliminating LLM arithmetic hallucinations via deterministic Python volume math, sub-15ms Qdrant Cloud vector search, Cohere cross-encoder reranking, and offline-first Flutter Web client.
           </p>
@@ -356,30 +510,51 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <!-- Project 2: JOB SeArCh -->
-        <div class="proj-card proj-card--cyan">
+        <div class="proj-card proj-card--cyan spotlight-card" id="job-search-demo">
           <div class="proj-header">
             <div class="proj-badge-wrap">
               <span class="badge badge-cyan">Semantic Search</span>
               <span class="badge badge-green">Live Web App</span>
+              <span class="badge badge-accent">🎬 1080p Video Reel</span>
             </div>
             <h3 class="proj-title">JOB SeArCh</h3>
             <p class="proj-tagline">Autonomous AI Job Hunting & Semantic Vector Matching Engine</p>
           </div>
+
+          <!-- Video Demo Reel Preview -->
+          <div class="proj-media-wrap video-featured-wrap">
+            <div class="video-ribbon">
+              <span class="ribbon-live-dot"></span>
+              <span class="ribbon-title">FEATURED SYSTEM DEMO REEL</span>
+              <span class="ribbon-meta">90s · 1080p Ultra HD · ChristopherNeural AI Audio</span>
+            </div>
+            <video class="proj-video" id="job-search-inline-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+              <source src="assets/demo_reel.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <div class="proj-media-caption">
+              <span>🎬 <strong>JOB SeArCh Video Walkthrough</strong> — 5 Pillars: Latent Space, ATS Scraper, Grok Matching, RAM Vault & 1-Click Apply</span>
+              <a href="assets/demo_reel.mp4" target="_blank" class="caption-link">Open Fullscreen ↗</a>
+            </div>
+          </div>
+
           <p class="proj-desc">
-            An intelligent career discovery system projecting candidate profiles and live scraped job postings into a shared 768-dimensional latent space. Features real-time ATS scraping, dynamic recruiter pitch generation, and a zero-knowledge local credential vault.
+            An intelligent career discovery system projecting candidate profiles and live scraped job postings into a shared 768-dimensional latent space. Features real-time ATS scraping (Ashby, Greenhouse, Lever), Grok LLM ultra-fast inference for deep contextual alignment, and a zero-knowledge local credential vault.
           </p>
           <div class="proj-tags">
             <span class="proj-tag">Flutter Web</span>
             <span class="proj-tag">BLoC Pattern</span>
             <span class="proj-tag">Supabase pgvector</span>
-            <span class="proj-tag">Google Gemini</span>
-            <span class="proj-tag">ATS Scraper API</span>
+            <span class="proj-tag">Grok LLM</span>
+            <span class="proj-tag">FastEmbed 768d</span>
+            <span class="proj-tag">ATS Scrapers</span>
             <span class="proj-tag">RAM-Only Vault</span>
+            <span class="proj-tag">15/15 Tests Passing</span>
           </div>
           <div class="proj-highlights">
             <div class="proj-highlight">
               <span class="hl-icon">🎯</span>
-              <span>768-dim HNSW cosine indexing with Gemini Flash re-ranking & pitch generation</span>
+              <span>768-dim HNSW cosine indexing with Grok LLM re-ranking & pitch generation</span>
             </div>
             <div class="proj-highlight">
               <span class="hl-icon">🛡️</span>
@@ -387,11 +562,12 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
             </div>
             <div class="proj-highlight">
               <span class="hl-icon">🕷️</span>
-              <span>Headless multi-source ATS extraction for Ashby, Greenhouse, and Lever</span>
+              <span>Headless multi-source ATS extraction for Ashby, Greenhouse, Lever & custom URLs</span>
             </div>
           </div>
           <div class="proj-actions">
             <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">🎯 Live App</a>
+            <a href="assets/demo_reel.mp4" target="_blank" class="btn btn-sm btn-ghost">🎬 Demo Reel</a>
             <a href="https://github.com/joelaah/Job-Searcher" target="_blank" class="btn btn-sm btn-ghost">GitHub Repo</a>
           </div>
         </div>
@@ -412,17 +588,17 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
         </div>
 
         <div class="cta-grid">
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">⚡</div>
             <div class="cta-card-title">Production Latency</div>
             <p class="cta-card-text">Sub-800ms end-to-end round trip across Flutter Web, FastAPI orchestration, Qdrant/pgvector recall, and Gemini Flash inference.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">🛡️</div>
             <div class="cta-card-title">Zero Math Hallucination</div>
             <p class="cta-card-text">Total tonnage and hypertrophy splits computed via pure deterministic Python before injecting ground truth into the generation prompt.</p>
           </div>
-          <div class="cta-card">
+          <div class="cta-card spotlight-card">
             <div class="cta-card-icon">📱</div>
             <div class="cta-card-title">Local-First Architecture</div>
             <p class="cta-card-text">Instant 0ms UI updates via browser localStorage and optimistic UI patterns, backed by asynchronous Supabase PostgreSQL synchronization.</p>
@@ -479,6 +655,13 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
           <div class="modal-link-sub">joelaah.github.io/Job-Searcher/</div>
         </div>
       </a>
+      <a href="interactive_learning_hub.html" target="_blank" class="modal-link">
+        <span class="modal-link-icon">🕹️</span>
+        <div>
+          <div class="modal-link-title">Systems Arcade Hub (104 Q&As)</div>
+          <div class="modal-link-sub">Interactive Systems Architecture & Interview Lab</div>
+        </div>
+      </a>
       <a href="resume.html" target="_blank" class="modal-link">
         <span class="modal-link-icon">📄</span>
         <div>
@@ -489,12 +672,77 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </div>
 
+  <!-- Live Interactive Recruiter Terminal -->
+  <div class="terminal-overlay" id="terminal-overlay">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="dot-btn red" id="term-close" title="Close Terminal"></span>
+          <span class="dot-btn yellow" id="term-min" title="Minimize"></span>
+          <span class="dot-btn green" id="term-max" title="Clear Buffer"></span>
+        </div>
+        <div class="terminal-title">joel@systems-node:~ (zsh)</div>
+        <div class="terminal-actions">
+          <span class="term-status-badge">ONLINE · 768d VECTOR READY</span>
+        </div>
+      </div>
+      <div class="terminal-body" id="term-body">
+        <div class="term-line welcome">
+          <span class="term-cyan">Joel Pachuau — AI & Full-Stack Systems CLI [v2.4.0]</span><br>
+          <span class="term-dim">Connected to local node. Type</span> <span class="term-accent">'help'</span> <span class="term-dim">or run</span> <span class="term-green">'curl /api/match'</span> <span class="term-dim">to benchmark.</span>
+        </div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="term-prompt">joel@prod:~$</span>
+        <input type="text" id="term-input" class="term-input" placeholder="type a command (help, projects, skills, curl, clear)..." autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
+
+  <!-- High-Definition Video Walkthrough Modal -->
+  <div class="video-modal-overlay" id="video-modal-overlay">
+    <div class="video-modal-window">
+      <div class="video-modal-header">
+        <div class="video-modal-title">
+          <span class="video-modal-badge">🎬 DEMO REEL</span>
+          <strong>JOB SeArCh — Autonomous AI Job Hunting Engine</strong>
+        </div>
+        <button class="video-modal-close" id="video-modal-close" title="Close Video">&times;</button>
+      </div>
+      <div class="video-modal-body">
+        <video id="modal-video-player" class="modal-video" controls poster="assets/hero_dashboard.jpg" preload="metadata">
+          <source src="assets/demo_reel.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div class="video-modal-footer">
+        <div class="video-modal-tags">
+          <span class="proj-tag">Flutter Web</span>
+          <span class="proj-tag">Grok LLM</span>
+          <span class="proj-tag">Supabase pgvector</span>
+          <span class="proj-tag">Zero-Knowledge Vault</span>
+        </div>
+        <div class="video-modal-actions">
+          <a href="#job-search-demo" class="btn btn-sm btn-ghost" id="modal-jump-btn">Scroll to Project Details ↓</a>
+          <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="btn btn-sm btn-cyan">Launch Live App ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating CLI Launcher Pill -->
+  <button class="floating-cli-pill" id="floating-cli" title="Launch Interactive Developer CLI">
+    <span class="cli-icon">>_</span>
+    <span class="cli-label">Interactive Terminal</span>
+  </button>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-links">
         <a href="https://joelaah.github.io/fitness_app/" target="_blank">PulseFit Demo</a>
         <a href="https://joelaah.github.io/Job-Searcher/" target="_blank">JOB SeArCh Demo</a>
+        <a href="interactive_learning_hub.html" target="_blank">🕹️ Systems Arcade Hub</a>
         <a href="resume.html" target="_blank">Resume</a>
         <a href="https://github.com/joelaah/fitness_app" target="_blank">PulseFit Repo</a>
         <a href="https://github.com/joelaah/Job-Searcher" target="_blank">Job-Searcher Repo</a>
@@ -504,6 +752,8 @@ Future&lt;void&gt; saveCompletedSession(WorkoutSession session) async {
     </div>
   </footer>
 
+  <!-- Lenis Smooth Scroll -->
+  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
   <!-- Three.js from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="app.js"></script>
