@@ -2,10 +2,13 @@ import 'package:fitness_app/core/config/supabase_config.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/routines/providers/routine_provider.dart';
 import 'package:fitness_app/features/routines/repositories/shared_prefs_routine_repository.dart';
+import 'package:fitness_app/features/workout/bloc/ai_coach_bloc.dart';
+import 'package:fitness_app/features/workout/bloc/ai_coach_event.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/repositories/workout_history_repository.dart';
 import 'package:fitness_app/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -63,11 +66,20 @@ class FitnessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Aura Fit',
-      theme: AppTheme.darkTheme,
-      home: const MainScreen(),
+    return BlocProvider<AiCoachBloc>(
+      create: (ctx) {
+        final workoutProvider = ctx.read<WorkoutProvider>();
+        return AiCoachBloc()
+          ..add(AiCoachRecommendationsRequested(
+            sessions: workoutProvider.historyRepository.getAll(),
+          ));
+      },
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Aura Fit',
+        theme: AppTheme.darkTheme,
+        home: const MainScreen(),
+      ),
     );
   }
 }

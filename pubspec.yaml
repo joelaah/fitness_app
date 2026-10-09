@@ -1,6 +1,8 @@
 name: fitness_app
-description: "A new Flutter project."
+description: "PulseFit AI — Local-first responsive workout tracking and two-stage RAG recommendation engine."
 publish_to: 'none'
+homepage: "https://joelaah.github.io/fitness_app/"
+repository: "https://github.com/joelaah/fitness_app"
 
 version: 1.0.0+1
 
@@ -11,6 +13,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.7
   provider: ^6.1.5+1
   uuid: ^4.6.0
   shared_preferences: ^2.5.3
@@ -25,8 +30,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  bloc_test: ^9.1.7
   flutter_lints: ^5.0.0
-  build_runner: ^2.15.1
+  build_runner: ^2.4.14
   freezed: ^3.2.3
   json_serializable: ^6.11.2
   very_good_analysis: ^9.0.0

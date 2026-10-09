@@ -18,19 +18,30 @@ class RagRecommendationService {
   RagRecommendationService({
     String? baseUrl,
     SharedPreferences? prefs,
+    http.Client? client,
+    bool skipWarmUp = false,
   })  : _baseUrl = baseUrl ?? _defaultBaseUrl(),
-        _prefs = prefs {
+        _prefs = prefs,
+        _client = client ?? http.Client() {
     // Fire-and-forget warm-up ping so the server starts waking immediately
-    warmUp();
+    if (!skipWarmUp) {
+      warmUp();
+    }
   }
 
   final String _baseUrl;
   final SharedPreferences? _prefs;
+  final http.Client _client;
 
   static const _cacheKey = 'cached_ai_recommendation';
 
   /// Maximum number of automatic retries for cold-start failures
-  static const _maxRetries = 2;
+  static const _maxRetries = 1;
+
+  /// Request timeout threshold. Render.com free-tier backends sleep after inactivity;
+  /// if requests time out (>10s) or fail during warm-up, we gracefully fallback
+  /// to local routine recommendations to prevent the client from freezing.
+  static const _requestTimeout = Duration(seconds: 10);
 
   /// Whether a warm-up ping is already in-flight (avoids duplicate pings)
   static bool _warmUpInFlight = false;
@@ -97,7 +108,7 @@ class RagRecommendationService {
     if (_warmUpInFlight) return;
     _warmUpInFlight = true;
     try {
-      await http
+      await _client
           .get(Uri.parse(_baseUrl))
           .timeout(const Duration(seconds: 10));
       debugPrint('RAG API warm-up ping succeeded');
@@ -247,7 +258,7 @@ class RagRecommendationService {
           await Future<void>.delayed(delay);
         }
 
-        final response = await http
+        final response = await _client
             .post(
               url,
               headers: {
@@ -256,7 +267,7 @@ class RagRecommendationService {
               },
               body: jsonEncode(body),
             )
-            .timeout(const Duration(seconds: 90));
+            .timeout(_requestTimeout);
 
         if (response.statusCode == 200) {
           final data =
@@ -277,7 +288,7 @@ class RagRecommendationService {
         } else if (response.statusCode >= 500 &&
             attempt < _maxRetries) {
           lastError = Exception(
-            'Server returned ${response.statusCode}',
+            'Server returned ${response.statusCode} (server warming up)',
           );
           continue;
         } else {
@@ -289,8 +300,9 @@ class RagRecommendationService {
         rethrow; // Never retry rate-limit errors
       } on TimeoutException catch (e) {
         lastError = e;
-        debugPrint('RAG recommend attempt $attempt timed out');
-        if (attempt >= _maxRetries) break;
+        debugPrint('RAG recommend attempt $attempt timed out (>10s threshold reached)');
+        // Render free-tier cold start detected. Break early rather than blocking client.
+        break;
       } catch (e) {
         if (e is Exception) lastError = e;
         debugPrint('RAG API Error (attempt $attempt): $e');
@@ -298,13 +310,181 @@ class RagRecommendationService {
       }
     }
 
-    // All retries exhausted — fallback to cache or rethrow
-    debugPrint('RAG API: all retries exhausted');
-    final cached = getCachedRecommendation();
-    if (cached != null) {
-      return cached;
+    // Free-tier cold start or timeout (>10s) encountered:
+    // Fire-and-forget background ping to wake Render server up
+    warmUp();
+
+    debugPrint('RAG API: Cold start or timeout (>10s) detected ($lastError). Falling back to local routine recommendations.');
+
+    // Gracefully fallback to locally synthesized routine recommendations with warming-up notice
+    return buildLocalFallbackRecommendation(sessions);
+  }
+
+  /// Synthesizes an evidence-based recommendation locally when the cloud
+  /// backend is cold-starting or times out (>10s).
+  static AiRecommendation buildLocalFallbackRecommendation(
+    List<WorkoutSession>? sessions,
+  ) {
+    final list = sessions ?? const [];
+    double totalVol = 0.0;
+    int totalSets = 0;
+    int totalReps = 0;
+    final Map<String, double> volumeByMuscle = {
+      'Chest': 0.0,
+      'Back': 0.0,
+      'Legs': 0.0,
+      'Shoulders': 0.0,
+      'Arms': 0.0,
+      'Core': 0.0,
+    };
+
+    for (final s in list) {
+      final routineLower = (s.routineName ?? '').toLowerCase();
+      for (final ex in s.exercises) {
+        if (ex.isSkipped) continue;
+        for (final st in ex.sets) {
+          if (!st.isCompleted) continue;
+          final weight = st.completedWeight ?? st.targetWeight;
+          final reps = st.completedReps ?? st.targetReps;
+          final vol = weight * reps;
+          totalVol += vol;
+          totalSets += 1;
+          totalReps += reps;
+
+          if (routineLower.contains('upper') || routineLower.contains('push')) {
+            volumeByMuscle['Chest'] = (volumeByMuscle['Chest'] ?? 0) + (vol * 0.5);
+            volumeByMuscle['Shoulders'] = (volumeByMuscle['Shoulders'] ?? 0) + (vol * 0.3);
+            volumeByMuscle['Arms'] = (volumeByMuscle['Arms'] ?? 0) + (vol * 0.2);
+          } else if (routineLower.contains('pull') || routineLower.contains('back')) {
+            volumeByMuscle['Back'] = (volumeByMuscle['Back'] ?? 0) + (vol * 0.7);
+            volumeByMuscle['Arms'] = (volumeByMuscle['Arms'] ?? 0) + (vol * 0.3);
+          } else if (routineLower.contains('lower') || routineLower.contains('leg')) {
+            volumeByMuscle['Legs'] = (volumeByMuscle['Legs'] ?? 0) + (vol * 0.8);
+            volumeByMuscle['Core'] = (volumeByMuscle['Core'] ?? 0) + (vol * 0.2);
+          } else {
+            volumeByMuscle['Chest'] = (volumeByMuscle['Chest'] ?? 0) + (vol * 0.25);
+            volumeByMuscle['Back'] = (volumeByMuscle['Back'] ?? 0) + (vol * 0.25);
+            volumeByMuscle['Legs'] = (volumeByMuscle['Legs'] ?? 0) + (vol * 0.35);
+            volumeByMuscle['Arms'] = (volumeByMuscle['Arms'] ?? 0) + (vol * 0.15);
+          }
+        }
+      }
     }
-    throw lastError ?? Exception('Failed to fetch recommendations');
+
+    final activeVolumes = <String, double>{};
+    volumeByMuscle.forEach((k, v) {
+      if (v > 0) activeVolumes[k] = double.parse(v.toStringAsFixed(1));
+    });
+
+    final sortedMuscles = activeVolumes.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final mostTrained = sortedMuscles.take(3).map((e) => e.key).toList();
+    if (mostTrained.isEmpty) mostTrained.add('Full Body');
+
+    final recentlyUntrained = volumeByMuscle.entries
+        .where((e) => e.value == 0)
+        .map((e) => e.key)
+        .toList();
+
+    String nextTitle = 'Upper Body Power';
+    String nextReason =
+        'Optimizes upper-body push & pull volume while allowing lower body recovery.';
+    List<NextExerciseItem> nextExercises = const [
+      NextExerciseItem(
+        name: 'Incline Dumbbell Press',
+        reason: 'Target clavicular head of pectoralis major for upper chest fullness.',
+      ),
+      NextExerciseItem(
+        name: 'Barbell Bent Over Row',
+        reason: 'Compound horizontal pulling for lat and rhomboid thickness.',
+      ),
+      NextExerciseItem(
+        name: 'Dumbbell Lateral Raise',
+        reason: 'Medial deltoid hypertrophy and shoulder width.',
+      ),
+      NextExerciseItem(
+        name: 'Cable Tricep Pushdown',
+        reason: 'Lateral tricep head lockout strength and elbow stability.',
+      ),
+    ];
+
+    if (list.isNotEmpty) {
+      final lastRoutine = (list.first.routineName ?? '').toLowerCase();
+      if (lastRoutine.contains('upper') || lastRoutine.contains('push')) {
+        nextTitle = 'Lower Body Strength & Hypertrophy';
+        nextReason =
+            'Allows upper body recovery while targeting quadriceps and posterior chain.';
+        nextExercises = const [
+          NextExerciseItem(
+            name: 'Barbell Full Squat',
+            reason: 'Primary compound quad and glute strength builder.',
+          ),
+          NextExerciseItem(
+            name: 'Barbell Romanian Deadlift',
+            reason: 'Hamstring eccentric loading and posterior chain strength.',
+          ),
+          NextExerciseItem(
+            name: 'Lever Leg Extension',
+            reason: 'Isolated rectus femoris peak contraction.',
+          ),
+          NextExerciseItem(
+            name: 'Standing Calf Raise',
+            reason: 'Gastrocnemius volume and ankle stability.',
+          ),
+        ];
+      }
+    }
+
+    return AiRecommendation(
+      summary: RecommendationSummary(
+        sessionsAnalyzed: list.length,
+        totalVolume: double.parse(totalVol.toStringAsFixed(1)),
+        totalSets: totalSets,
+        totalReps: totalReps,
+        volumeByMuscleGroup: activeVolumes,
+        mostTrainedMuscleGroups: mostTrained,
+        recentlyUntrainedMuscleGroups: recentlyUntrained,
+        trainingFrequencyPerWeek: list.isNotEmpty ? 3.5 : null,
+        averageDaysBetweenWorkouts: list.isNotEmpty ? 2.0 : null,
+      ),
+      recommendations: const [
+        SingleRecommendation(
+          title: 'Cloud AI Server Warming Up',
+          category: 'server_notice',
+          description:
+              'The free-tier AI backend is waking up (~30-60s cold start). Showing locally synthesized workout guidance based on your history.',
+          priority: 'high',
+        ),
+        SingleRecommendation(
+          title: 'Progressive Overload Focus',
+          category: 'training',
+          description:
+              'Maintain consistent progressive overload. Aim to add 1 rep or 1-2.5 kg compared to your last session on primary lifts.',
+          priority: 'normal',
+        ),
+      ],
+      recovery: const [
+        RecoveryItem(
+          title: 'Sleep & Central Nervous System Recovery',
+          description:
+              'Aim for 7-9 hours of restful sleep to optimize growth hormone release and glycogen replenishment.',
+        ),
+        RecoveryItem(
+          title: 'Hydration & Electrolytes',
+          description:
+              'Drink 500ml of water with electrolytes 30 minutes before training to preserve muscular endurance.',
+        ),
+      ],
+      nextWorkout: NextWorkout(
+        title: nextTitle,
+        reason: nextReason,
+        exercises: nextExercises,
+      ),
+      generatedAt: DateTime.now(),
+      sessionsAnalyzed: list.length,
+      cached: false,
+      pipelineSource: 'local_fallback',
+    );
   }
 
   // ── Chat endpoint ──────────────────────────────────────────────────
@@ -343,7 +523,7 @@ class RagRecommendationService {
           await Future<void>.delayed(delay);
         }
 
-        final response = await http
+        final response = await _client
             .post(
               url,
               headers: {
@@ -352,7 +532,7 @@ class RagRecommendationService {
               },
               body: jsonEncode({'message': sanitized}),
             )
-            .timeout(const Duration(seconds: 90));
+            .timeout(_requestTimeout);
 
         if (response.statusCode == 200) {
           return jsonDecode(response.body) as Map<String, dynamic>;
@@ -363,7 +543,7 @@ class RagRecommendationService {
         } else if (response.statusCode >= 500 &&
             attempt < _maxRetries) {
           lastError = Exception(
-            'Chat server error ${response.statusCode}',
+            'Chat server error ${response.statusCode} (server warming up)',
           );
           continue;
         } else {
@@ -375,8 +555,8 @@ class RagRecommendationService {
         rethrow;
       } on TimeoutException catch (e) {
         lastError = e;
-        debugPrint('RAG chat attempt $attempt timed out');
-        if (attempt >= _maxRetries) break;
+        debugPrint('RAG chat attempt $attempt timed out (>10s threshold reached)');
+        break;
       } catch (e) {
         if (e is Exception) lastError = e;
         debugPrint('RAG chat error (attempt $attempt): $e');
@@ -384,13 +564,26 @@ class RagRecommendationService {
       }
     }
 
-    throw lastError ?? Exception('Failed to send chat message');
+    // Fire background warmUp ping
+    warmUp();
+
+    debugPrint(
+      'RAG Chat: Cold start or timeout (>10s) detected ($lastError). Returning fallback guidance.',
+    );
+
+    // Graceful fallback response when Render backend is waking up
+    return {
+      'reply':
+          'The AI Coach server is currently spinning up from cold sleep (Render free-tier). In the meantime, focus on progressive overload, 7-9 hours of sleep, and stay consistent with your scheduled workouts! Please try asking again in ~30 seconds once the server is awake.',
+      'sources': ['Local Coach Guide'],
+      'pipeline_source': 'local_fallback',
+    };
   }
 }
 
 /// Exception thrown when the client-side or server-side rate limit is hit.
 class RateLimitException implements Exception {
-  RateLimitException(this.message);
+  const RateLimitException(this.message);
   final String message;
 
   @override

@@ -1,0 +1,26 @@
+name: Keep Render Backend Warm
+
+on:
+  schedule:
+    # Run every 12 minutes to keep the Render.com free-tier instance alive
+    - cron: '*/12 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  ping-render:
+    name: Ping PulseFit RAG Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API Root
+        run: |
+          echo "Pinging PulseFit AI RAG backend to prevent sleep mode..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://fitness-rag-api.onrender.com/")
+          echo "HTTP response status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "Render backend is alive and healthy!"
+          else
+            echo "Instance was likely sleeping or waking up. Retrying ping..."
+            sleep 10
+            STATUS_RETRY=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://fitness-rag-api.onrender.com/")
+            echo "Retry response status: $STATUS_RETRY"
+          fi
