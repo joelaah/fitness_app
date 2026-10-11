@@ -1,0 +1,80 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.env
+*.keystore
+*.jks
+key.properties
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Local datasets and logs
+exercises-dataset/
+build_log.txt
+graphify-out/
+
+# Study guides, interview preparation & recruiter notes
+study/
+MASTER_INTERVIEW_STUDY_GUIDE.md
+INTERVIEW_PREP_RAG_ARCHITECTURE.md
+RECRUITER_PORTFOLIO_CASE_STUDY.md
+*.wav
+*.mp3
+!portfolio/assets/*.mp3
+
+# Local AI assistant configurations
+.claude/
+
+# Migration script
+migrate.dart
+
+# Database schema (keep private)
+supabase_schema.sql
+
+# Agents config
+.agents/
