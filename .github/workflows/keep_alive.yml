@@ -32,6 +32,29 @@ jobs:
             echo "Secondary HTTP status: $RETRY_STATUS"
           fi
 
+      # ────────────────────────────────────────────────────────
+      # 2. Qdrant Cloud Cluster Keep-Alive (RAGforJoel)
+      # ────────────────────────────────────────────────────────
+      - name: Ping Qdrant Cloud Cluster (RAGforJoel)
+        env:
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        run: |
+          if [ -n "$QDRANT_URL" ] && [ -n "$QDRANT_API_KEY" ]; then
+            echo "Pinging Qdrant Cloud Cluster (RAGforJoel) to reset inactivity countdown..."
+            QDRANT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 15 --max-time 30 \
+              -X GET "${QDRANT_URL}/collections" \
+              -H "api-key: ${QDRANT_API_KEY}" || echo "000")
+            echo "Qdrant Cluster response: HTTP $QDRANT_STATUS"
+            if [ "$QDRANT_STATUS" = "200" ]; then
+              echo "✅ Qdrant cluster is active; inactivity timer reset."
+            else
+              echo "⚠️ Qdrant returned HTTP $QDRANT_STATUS"
+            fi
+          else
+            echo "ℹ️ QDRANT_URL or QDRANT_API_KEY secret not set in repository; skipping direct Qdrant ping."
+          fi
+
           # Always exit 0: The purpose of this scheduled task is to emit keep-alive traffic,
           # not to fail CI builds or trigger GitHub error notification emails.
           echo "Keep-alive routine completed successfully."
