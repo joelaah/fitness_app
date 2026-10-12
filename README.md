@@ -11,6 +11,10 @@
 
 PulseFit AI is an enterprise-grade fitness tracking and intelligent coaching application. It pairs a high-performance **Flutter Web / Mobile** interface with a **Two-Stage Retrieval-Augmented Generation (RAG)** copilot that delivers hyper-personalized, biomechanically sound workout recommendations based on real user training logs.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="PulseFit AI Live Product Tour & AI Copilot Demo" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</p>
+
 ---
 
 ## 🔗 Live Deployments & Essential Links
