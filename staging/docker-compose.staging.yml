@@ -1,0 +1,123 @@
+version: "3.8"
+
+networks:
+  pulsefit-staging-network:
+    name: pulsefit-staging-network
+    driver: bridge
+
+volumes:
+  postgres_staging_data:
+    name: pulsefit-postgres-staging-data
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL 15 Relational Database
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: pulsefit-postgres-staging
+    restart: unless-stopped
+    networks:
+      - pulsefit-staging-network
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./init-db/01-auth-schema.sql:/docker-entrypoint-initdb.d/01-auth-schema.sql:ro
+      - ../supabase_schema.sql:/docker-entrypoint-initdb.d/02-supabase-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # 2. Mock Supabase Server (GoTrue Auth + PostgREST + Strict RLS)
+  # ----------------------------------------------------------------------------
+  mock-supabase:
+    image: python:3.12-slim
+    container_name: pulsefit-mock-supabase-staging
+    restart: unless-stopped
+    networks:
+      - pulsefit-staging-network
+    working_dir: /app
+    volumes:
+      - ../:/app:ro
+    ports:
+      - "${MOCK_SUPABASE_PORT:-54321}:54321"
+    environment:
+      PORT: 54321
+      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+    command: >
+      sh -c "pip install --no-cache-dir fastapi uvicorn pydantic pyjwt && python staging/mock_supabase_server.py --host 0.0.0.0 --port 54321"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:54321/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ----------------------------------------------------------------------------
+  # 3. PostgREST Service (Standard PostgREST Layer over PostgreSQL)
+  # ----------------------------------------------------------------------------
+  postgrest:
+    image: postgrest/postgrest:v12.0.2
+    container_name: pulsefit-postgrest-staging
+    restart: unless-stopped
+    networks:
+      - pulsefit-staging-network
+    ports:
+      - "${POSTGREST_PORT:-8080}:3000"
+    environment:
+      PGRST_DB_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-postgres}
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # 4. PulseFit RAG Backend Microservice
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: ${RAG_CONTEXT_PATH:-../../Rag}
+      dockerfile: Dockerfile
+    image: pulsefit-backend:staging
+    container_name: pulsefit-backend-staging
+    restart: unless-stopped
+    networks:
+      - pulsefit-staging-network
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      PORT: 8000
+      SUPABASE_URL: http://mock-supabase:54321
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      MOCK_LLM_FOR_STRESS_TEST: ${MOCK_LLM_FOR_STRESS_TEST:-false}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      QDRANT_URL: ${QDRANT_URL:-http://localhost:6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      COHERE_API_KEY: ${COHERE_API_KEY:-}
+    depends_on:
+      mock-supabase:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

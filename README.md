@@ -2,6 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-PulseFit_Web-0284c7?style=for-the-badge&logo=googlechrome&logoColor=white)](https://joelaah.github.io/fitness_app/)
 [![Portfolio](https://img.shields.io/badge/Portfolio-Live_Case_Study-8B5CF6?style=for-the-badge&logo=safari&logoColor=white)](https://joelaah.github.io/fitness_app/portfolio/)
+[![Staging & Load Testing](https://img.shields.io/badge/Case_Study-Staging_%26_Locust_Load_Testing-10B981?style=for-the-badge&logo=locust&logoColor=white)](STAGING_AND_PERFORMANCE_CASE_STUDY.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x_Web_%26_Mobile-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Qdrant](https://img.shields.io/badge/Vector_DB-Qdrant_Cloud_HNSW-DC2626?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech)
@@ -15,6 +16,7 @@ PulseFit AI is an enterprise-grade fitness tracking and intelligent coaching app
 ## 🔗 Live Deployments & Essential Links
 
 - 🌐 **Live Web Application (PulseFit AI):** [https://joelaah.github.io/fitness_app/](https://joelaah.github.io/fitness_app/)
+- 📊 **Staging, Concurrency & Load Testing Case Study:** [STAGING_AND_PERFORMANCE_CASE_STUDY.md](STAGING_AND_PERFORMANCE_CASE_STUDY.md)
 - 💼 **Interactive Portfolio & Resume:** [https://joelaah.github.io/fitness_app/portfolio/](https://joelaah.github.io/fitness_app/portfolio/)
 - ⚡ **Live RAG Backend API (Render.com):** [https://fitness-rag-api.onrender.com](https://fitness-rag-api.onrender.com)
 - 📖 **Swagger / OpenAPI Documentation:** [https://fitness-rag-api.onrender.com/docs](https://fitness-rag-api.onrender.com/docs)

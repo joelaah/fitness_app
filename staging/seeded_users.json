@@ -1,0 +1,72 @@
+[
+  {
+    "id": "5b9a5560-7e60-59df-8959-9a795a2de53a",
+    "email": "user_001_5b9a5560@staging.pulsefit.io",
+    "password": "StagingPassword123!",
+    "display_name": "Marcus Lindqvist",
+    "experience_level": "advanced",
+    "preferred_training_goal": "strength",
+    "weight_kg": 93.3,
+    "height_cm": 182,
+    "persona_name": "Powerlifter",
+    "dev_token": "dev-user-5b9a5560-7e60-59df-8959-9a795a2de53a",
+    "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1tb2NrIiwic3ViIjoiNWI5YTU1NjAtN2U2MC01OWRmLTg5NTktOWE3OTVhMmRlNTNhIiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ1c2VyXzAwMV81YjlhNTU2MEBzdGFnaW5nLnB1bHNlZml0LmlvIiwiZXhwIjoxNzk0NDA0NjM4LCJpYXQiOjE3OTE4MTI2Mzh9.PNAfypo86W2QJt1GhpbbjLMS8Rf9uIexB1q7bul5ZBA",
+    "created_at": "2026-07-10T13:43:58.544455Z"
+  },
+  {
+    "id": "966c5403-66c3-5858-95d0-f4fec842e657",
+    "email": "user_002_966c5403@staging.pulsefit.io",
+    "password": "StagingPassword123!",
+    "display_name": "Camila Lindqvist",
+    "experience_level": "advanced",
+    "preferred_training_goal": "strength",
+    "weight_kg": 111.8,
+    "height_cm": 177,
+    "persona_name": "Powerlifter",
+    "dev_token": "dev-user-966c5403-66c3-5858-95d0-f4fec842e657",
+    "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1tb2NrIiwic3ViIjoiOTY2YzU0MDMtNjZjMy01ODU4LTk1ZDAtZjRmZWM4NDJlNjU3IiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ1c2VyXzAwMl85NjZjNTQwM0BzdGFnaW5nLnB1bHNlZml0LmlvIiwiZXhwIjoxNzk0NDA0NjM4LCJpYXQiOjE3OTE4MTI2Mzh9.s72HlETAQkAxXTwHI8cY3NtvaX8qeGEkphLkqE0KIso",
+    "created_at": "2026-06-26T13:43:58.544455Z"
+  },
+  {
+    "id": "8d45daa8-7ad5-5619-b184-1ff891d303ed",
+    "email": "user_003_8d45daa8@staging.pulsefit.io",
+    "password": "StagingPassword123!",
+    "display_name": "Elena Vance",
+    "experience_level": "intermediate",
+    "preferred_training_goal": "endurance",
+    "weight_kg": 59.9,
+    "height_cm": 172,
+    "persona_name": "Endurance Athlete",
+    "dev_token": "dev-user-8d45daa8-7ad5-5619-b184-1ff891d303ed",
+    "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1tb2NrIiwic3ViIjoiOGQ0NWRhYTgtN2FkNS01NjE5LWIxODQtMWZmODkxZDMwM2VkIiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ1c2VyXzAwM184ZDQ1ZGFhOEBzdGFnaW5nLnB1bHNlZml0LmlvIiwiZXhwIjoxNzk0NDA0NjM4LCJpYXQiOjE3OTE4MTI2Mzh9.0I2XWP6DHVq2BRW74-aDvWdkEU8QbrPqPfH65C9TbZU",
+    "created_at": "2026-06-28T13:43:58.544455Z"
+  },
+  {
+    "id": "03a13401-71f9-5cd8-8ab5-27e702986922",
+    "email": "user_004_03a13401@staging.pulsefit.io",
+    "password": "StagingPassword123!",
+    "display_name": "Marcus Moreau",
+    "experience_level": "intermediate",
+    "preferred_training_goal": "fat_loss",
+    "weight_kg": 73.4,
+    "height_cm": 185,
+    "persona_name": "Recomp / Fat Loss",
+    "dev_token": "dev-user-03a13401-71f9-5cd8-8ab5-27e702986922",
+    "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1tb2NrIiwic3ViIjoiMDNhMTM0MDEtNzFmOS01Y2Q4LThhYjUtMjdlNzAyOTg2OTIyIiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ1c2VyXzAwNF8wM2ExMzQwMUBzdGFnaW5nLnB1bHNlZml0LmlvIiwiZXhwIjoxNzk0NDA0NjM4LCJpYXQiOjE3OTE4MTI2Mzh9.JHLc1xZw-5EN2OIXMU3n-LxM17zTOljeOIUi-EKkayo",
+    "created_at": "2026-06-22T13:43:58.544455Z"
+  },
+  {
+    "id": "1c23c927-6eb4-51ba-8abf-b4ec5a10c16a",
+    "email": "user_005_1c23c927@staging.pulsefit.io",
+    "password": "StagingPassword123!",
+    "display_name": "Aisha Patel",
+    "experience_level": "intermediate",
+    "preferred_training_goal": "fat_loss",
+    "weight_kg": 80.1,
+    "height_cm": 173,
+    "persona_name": "Recomp / Fat Loss",
+    "dev_token": "dev-user-1c23c927-6eb4-51ba-8abf-b4ec5a10c16a",
+    "jwt_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1tb2NrIiwic3ViIjoiMWMyM2M5MjctNmViNC01MWJhLThhYmYtYjRlYzVhMTBjMTZhIiwiYXVkIjoiYXV0aGVudGljYXRlZCIsInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiZW1haWwiOiJ1c2VyXzAwNV8xYzIzYzkyN0BzdGFnaW5nLnB1bHNlZml0LmlvIiwiZXhwIjoxNzk0NDA0NjM4LCJpYXQiOjE3OTE4MTI2Mzh9.pdvQ64135ApnxSMYVCzLnuVCp2iwjTHfviMy9CeF-3I",
+    "created_at": "2026-06-19T13:43:58.544455Z"
+  }
+]
