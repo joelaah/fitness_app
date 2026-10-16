@@ -468,7 +468,7 @@ void main() {
             const FilterTrainers(TrainerFilterCriteria(searchQuery: 'Beta')),
           );
 
-          await Future<void>.delayed(const Duration(milliseconds: 150));
+          await Future<void>.delayed(const Duration(milliseconds: 300));
 
           expect(bloc.state, isA<TrainerLoaded>());
           final loaded = bloc.state as TrainerLoaded;

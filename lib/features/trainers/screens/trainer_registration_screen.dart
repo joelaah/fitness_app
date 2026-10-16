@@ -4,8 +4,13 @@ import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/features/auth/screens/auth_upgrade_dialog.dart';
 import 'package:fitness_app/features/auth/services/auth_service.dart';
+import 'package:fitness_app/features/trainers/models/certification_attachment.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
+import 'package:fitness_app/features/trainers/services/certification_picker_service.dart';
 import 'package:fitness_app/features/trainers/services/trainer_service.dart';
+import 'package:fitness_app/features/trainers/services/trainer_storage_service.dart';
+import 'package:fitness_app/features/trainers/widgets/certification_attachment_card.dart';
+import 'package:fitness_app/features/trainers/widgets/certification_preview_dialog.dart';
 import 'package:fitness_app/features/trainers/widgets/specialty_chip.dart';
 import 'package:flutter/material.dart';
 
@@ -18,13 +23,18 @@ class TrainerRegistrationScreen extends StatefulWidget {
     this.existingProfile,
     this.trainerService,
     this.authService,
+    this.storageService,
+    this.pickerService,
     this.isAnonymous,
   });
 
   final TrainerProfile? existingProfile;
   final TrainerService? trainerService;
   final AuthService? authService;
+  final TrainerStorageService? storageService;
+  final CertificationPickerService? pickerService;
   final bool? isAnonymous;
+
 
   @override
   State<TrainerRegistrationScreen> createState() =>
@@ -42,10 +52,24 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
 
   late final TrainerService _trainerService;
   late final AuthService _authService;
+  late final TrainerStorageService _storageService;
+  late final CertificationPickerService _pickerService;
 
   final Set<String> _selectedSpecialties = <String>{};
   final List<String> _certifications = <String>[];
+  final List<CertificationAttachment> _attachments =
+      <CertificationAttachment>[];
+  String? _certInputError;
   bool _isLoading = false;
+  late final String _sessionFallbackUid;
+
+  String get _effectiveUserId {
+    final existingId = widget.existingProfile?.userId;
+    if (existingId != null && existingId.isNotEmpty) return existingId;
+    final authId = _authService.currentUserId;
+    if (authId != null && authId.isNotEmpty) return authId;
+    return _sessionFallbackUid;
+  }
 
   static const List<String> _availableSpecialties = <String>[
     'Strength',
@@ -63,8 +87,11 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
   @override
   void initState() {
     super.initState();
+    _sessionFallbackUid = 'user-${DateTime.now().millisecondsSinceEpoch}';
     _trainerService = widget.trainerService ?? TrainerService();
     _authService = widget.authService ?? AuthService();
+    _storageService = widget.storageService ?? TrainerStorageService();
+    _pickerService = widget.pickerService ?? const CertificationPickerService();
 
     final profile = widget.existingProfile;
     final initialName = profile?.displayName ?? '';
@@ -87,7 +114,20 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
     }
 
     if (profile != null && profile.certifications.isNotEmpty) {
-      _certifications.addAll(profile.certifications);
+      var i = 0;
+      for (final cert in profile.certifications) {
+        if (TrainerProfile.isAttachmentUrl(cert)) {
+          _attachments.add(
+            CertificationAttachment.fromUrl(
+              cert,
+              id: 'cert-init-$i-${cert.hashCode}',
+            ),
+          );
+          i++;
+        } else {
+          _certifications.add(cert);
+        }
+      }
     }
   }
 
@@ -116,12 +156,175 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
 
   void _addCertification() {
     final text = _certController.text.trim();
-    if (text.isNotEmpty && !_certifications.contains(text)) {
+    if (text.isEmpty) {
       setState(() {
-        _certifications.add(text);
-        _certController.clear();
+        _certInputError = 'Please enter a credential name.';
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a credential name before adding.'),
+          backgroundColor: AppColors.warning,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
     }
+
+    if (_certifications.any((c) => c.toLowerCase() == text.toLowerCase())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This credential has already been added.'),
+          backgroundColor: AppColors.warning,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _certifications.add(text);
+      _certController.clear();
+      _certInputError = null;
+    });
+  }
+
+  Future<void> _pickAndAttachCertificate() async {
+    final attachment = await _pickerService.pickCertification();
+    if (attachment == null) return;
+
+    final existingIdx = _attachments.indexWhere(
+      (a) => a.name.toLowerCase() == attachment.name.toLowerCase(),
+    );
+    if (existingIdx >= 0) {
+      final existing = _attachments[existingIdx];
+      if (existing.error == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('"${attachment.name}" is already attached.'),
+              backgroundColor: AppColors.warning,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      } else {
+        setState(() {
+          _attachments.removeAt(existingIdx);
+        });
+      }
+    }
+
+    final pendingAttachment = attachment.copyWith(isUploading: true);
+    setState(() {
+      _attachments.add(pendingAttachment);
+    });
+
+    final currentUid = _effectiveUserId;
+
+    if (attachment.bytes != null && attachment.bytes!.isNotEmpty) {
+      try {
+        final mime = attachment.isPdf
+            ? 'application/pdf'
+            : (attachment.isImage
+                ? (attachment.extension == 'png'
+                    ? 'image/png'
+                    : (attachment.extension == 'webp'
+                        ? 'image/webp'
+                        : 'image/jpeg'))
+                : null);
+
+        final storageUrl = await _storageService.uploadCertification(
+          userId: currentUid,
+          fileName: attachment.name,
+          bytes: attachment.bytes!,
+          mimeType: mime,
+        );
+
+        if (mounted) {
+          final idx = _attachments.indexWhere((a) => a.id == attachment.id);
+          if (idx >= 0) {
+            setState(() {
+              _attachments[idx] = _attachments[idx].copyWith(
+                storageUrl: storageUrl,
+                isUploading: false,
+                error: null,
+              );
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Attached "${attachment.name}" successfully!'),
+                backgroundColor: AppColors.success,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          final idx = _attachments.indexWhere((a) => a.id == attachment.id);
+          if (idx >= 0) {
+            setState(() {
+              _attachments[idx] = _attachments[idx].copyWith(
+                isUploading: false,
+                error: 'Upload failed: $e',
+              );
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload "${attachment.name}": $e'),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      }
+    } else {
+      if (mounted) {
+        final idx = _attachments.indexWhere((a) => a.id == attachment.id);
+        if (idx >= 0) {
+          setState(() {
+            _attachments[idx] = _attachments[idx].copyWith(
+              isUploading: false,
+              error: 'File content is empty or unreadable.',
+            );
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unable to read content from "${attachment.name}".'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _removeAttachment(CertificationAttachment attachment) {
+    setState(() {
+      _attachments.removeWhere((a) => a.id == attachment.id);
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Removed "${attachment.name}".'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _previewAttachment(CertificationAttachment attachment) {
+    CertificationPreviewDialog.show(
+      context,
+      attachment: attachment,
+      onRemove: () => _removeAttachment(attachment),
+    );
   }
 
   Future<void> _submit() async {
@@ -132,6 +335,40 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
         const SnackBar(
           content: Text('Please select at least one coaching specialty.'),
           backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_attachments.any((a) => a.isUploading)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Please wait for file upload to complete before saving.'),
+          backgroundColor: AppColors.warning,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (_attachments.any((a) => a.error != null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please remove failed attachments before saving.'),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (_attachments.any((a) => a.storageUrl == null || a.storageUrl!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait for all attachments to finish uploading.'),
+          backgroundColor: AppColors.warning,
+          duration: Duration(seconds: 2),
         ),
       );
       return;
@@ -152,25 +389,32 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
       final exp = int.tryParse(_experienceController.text.trim()) ?? 0;
       final displayName = _displayNameController.text.trim();
 
+      final List<String> allCertifications = <String>[
+        ..._certifications,
+        ..._attachments
+            .map((a) => a.storageUrl)
+            .whereType<String>()
+            .where((url) => url.isNotEmpty),
+      ];
+
       if (widget.existingProfile != null) {
         final existing = widget.existingProfile!;
         await _trainerService.updateTrainerProfile(
           existing.userId,
           displayName: displayName.isNotEmpty ? displayName : null,
           bio: bio,
-          certifications: _certifications,
+          certifications: allCertifications,
           specialties: _selectedSpecialties.toList(),
           experienceYears: exp,
           hourlyRate: rate,
         );
       } else {
-        final now = DateTime.now().millisecondsSinceEpoch;
-        final currentUid = _authService.currentUserId ?? 'user-$now';
+        final currentUid = _effectiveUserId;
         await _trainerService.registerTrainer(
           userId: currentUid,
           displayName: displayName.isNotEmpty ? displayName : 'Coach',
           bio: bio,
-          certifications: _certifications,
+          certifications: allCertifications,
           specialties: _selectedSpecialties.toList(),
           experienceYears: exp,
           hourlyRate: rate,
@@ -203,6 +447,7 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
       }
     }
   }
+
 
   Future<void> _showUpgradePrompt() async {
     final upgraded = await AuthUpgradeDialog.show(
@@ -469,7 +714,15 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
+              const Text(
+                'Add credential titles (e.g. CSCS) or upload certificate files (PDF, PNG, JPEG).',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 10),
               if (_certifications.isNotEmpty) ...[
                 Wrap(
                   spacing: 8,
@@ -477,6 +730,7 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
                   children: _certifications.map((cert) {
                     return SpecialtyChip(
                       label: cert,
+                      icon: Icons.workspace_premium_rounded,
                       isInteractive: true,
                       isSelected: true,
                       onDeleted: () {
@@ -489,30 +743,76 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (_attachments.isNotEmpty) ...[
+                Column(
+                  children: _attachments.map((attachment) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: CertificationAttachmentCard(
+                        attachment: attachment,
+                        onPreview: () => _previewAttachment(attachment),
+                        onRemove: () => _removeAttachment(attachment),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: TextField(
+                      key: const Key('certification_text_input'),
                       controller: _certController,
                       style: const TextStyle(color: AppColors.textPrimary),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'e.g. CSCS, NASM-CPT, RYT-500...',
                         isDense: true,
+                        errorText: _certInputError,
                       ),
+                      onChanged: (_) {
+                        if (_certInputError != null) {
+                          setState(() {
+                            _certInputError = null;
+                          });
+                        }
+                      },
                       onSubmitted: (_) => _addCertification(),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
+                    key: const Key('add_certification_button'),
                     icon: const Icon(
                       Icons.add_circle,
                       color: AppColors.primary,
                       size: 28,
                     ),
+                    tooltip: 'Add credential title',
                     onPressed: _addCertification,
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                key: const Key('upload_certificate_button'),
+                icon: const Icon(Icons.upload_file_rounded, size: 20),
+                label: const Text('Upload Certificate / Document'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: _pickAndAttachCertificate,
+              ),
+
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
                 label: isEditing

@@ -114,6 +114,27 @@ class TrainerProfile extends Equatable implements FilterableTrainer {
     return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
   }
 
+  /// Returns only text-based credentials (excluding uploaded document URLs)
+  List<String> get textCertifications =>
+      certifications.where((c) => !isAttachmentUrl(c)).toList();
+
+  /// Returns uploaded certification document URLs
+  List<String> get certificationUrls =>
+      certifications.where(isAttachmentUrl).toList();
+
+  /// Identifies whether a credential string is an attached file URL/data URI
+  static bool isAttachmentUrl(String c) {
+    final lower = c.trim().toLowerCase();
+    return lower.startsWith('http://') ||
+        lower.startsWith('https://') ||
+        lower.startsWith('data:') ||
+        lower.startsWith('blob:') ||
+        lower.startsWith('mock://') ||
+        lower.startsWith('trainer-certifications/') ||
+        lower.contains('/trainer-certifications/');
+  }
+
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'user_id': userId,
