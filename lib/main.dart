@@ -6,6 +6,7 @@ import 'package:fitness_app/features/workout/bloc/ai_coach_bloc.dart';
 import 'package:fitness_app/features/workout/bloc/ai_coach_event.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/repositories/workout_history_repository.dart';
+import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
 import 'package:fitness_app/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,14 +68,21 @@ class FitnessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AiCoachBloc>(
-      create: (ctx) {
-        final workoutProvider = ctx.read<WorkoutProvider>();
-        return AiCoachBloc()
-          ..add(AiCoachRecommendationsRequested(
-            sessions: workoutProvider.historyRepository.getAll(),
-          ));
-      },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AiCoachBloc>(
+          create: (ctx) {
+            final workoutProvider = ctx.read<WorkoutProvider>();
+            return AiCoachBloc()
+              ..add(AiCoachRecommendationsRequested(
+                sessions: workoutProvider.historyRepository.getAll(),
+              ));
+          },
+        ),
+        BlocProvider<ChatBloc>(
+          create: (_) => ChatBloc(),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Aura Fit',

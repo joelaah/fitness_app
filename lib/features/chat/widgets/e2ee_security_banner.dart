@@ -191,12 +191,16 @@ class E2eeSecurityBanner extends StatelessWidget {
                 color: AppColors.primary,
               ),
               const SizedBox(width: 4),
-              Text(
-                'End-to-End Encrypted',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+              Flexible(
+                child: Text(
+                  'End-to-End Encrypted',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

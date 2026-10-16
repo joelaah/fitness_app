@@ -275,6 +275,20 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () {
+                            ChatBloc? bloc = widget.chatBloc;
+                            if (bloc == null || bloc.isClosed) {
+                              try {
+                                bloc = context.read<ChatBloc>();
+                              } catch (_) {}
+                            }
+
+                            final isTemplate = item.trainerId.startsWith('trainer-') ||
+                                item.trainerId.startsWith('mock-') ||
+                                (item.trainerUserId ?? '').startsWith('user-coach-') ||
+                                name == 'Bob Trainer' ||
+                                name == 'Charlie Yoga' ||
+                                name == 'Diana Vance';
+
                             Navigator.push(
                               context,
                               MaterialPageRoute<dynamic>(
@@ -284,10 +298,27 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                                   trainerUserId: item.trainerUserId,
                                   trainerName: name,
                                   initialConversation: item,
-                                  chatBloc: widget.chatBloc,
+                                  chatBloc: bloc,
+                                  isTemplateCoach: isTemplate,
                                 ),
                               ),
-                            );
+                            ).then((_) {
+                              if (mounted) {
+                                final activeBloc = bloc ??
+                                    () {
+                                      try {
+                                        return context.read<ChatBloc>();
+                                      } catch (_) {
+                                        return null;
+                                      }
+                                    }();
+                                if (activeBloc != null && !activeBloc.isClosed) {
+                                  activeBloc.add(
+                                    const LoadConversations(forceRefresh: true),
+                                  );
+                                }
+                              }
+                            });
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(

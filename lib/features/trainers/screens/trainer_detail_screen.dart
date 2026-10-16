@@ -3,11 +3,13 @@ import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/core/widgets/secondary_button.dart';
+import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
 import 'package:fitness_app/features/chat/screens/chat_screen.dart';
 import 'package:fitness_app/features/payments/screens/checkout_bottom_sheet.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
 import 'package:fitness_app/features/trainers/widgets/specialty_chip.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Trainer Profile Detail Screen: shows trainer bio, verified badge, rating,
 /// certifications list, specialties chips, hourly rate with platform fee
@@ -52,6 +54,19 @@ class TrainerDetailScreen extends StatelessWidget {
   }
 
   void _onMessageCoach(BuildContext context, String trainerName) {
+    ChatBloc? chatBloc;
+    try {
+      final b = context.read<ChatBloc>();
+      if (!b.isClosed) chatBloc = b;
+    } catch (_) {}
+
+    final isTemplate = trainer.id.startsWith('trainer-') ||
+        trainer.id.startsWith('mock-') ||
+        trainer.userId.startsWith('user-coach-') ||
+        trainer.displayName == 'Bob Trainer' ||
+        trainer.displayName == 'Charlie Yoga' ||
+        trainer.displayName == 'Diana Vance';
+
     Navigator.push(
       context,
       MaterialPageRoute<dynamic>(
@@ -63,6 +78,8 @@ class TrainerDetailScreen extends StatelessWidget {
           trainerSpecialty: trainer.specialties.isNotEmpty
               ? trainer.specialties.first
               : null,
+          chatBloc: chatBloc,
+          isTemplateCoach: isTemplate,
         ),
       ),
     );

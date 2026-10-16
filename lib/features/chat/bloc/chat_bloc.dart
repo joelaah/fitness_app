@@ -95,19 +95,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
 
       // 3. Attach Realtime Channel
-      await _chatService.subscribeToConversation(
-        conversation.id,
-        recipientUserId: peerUserId,
-        onMessageReceived: (msg) => add(MessageReceived(msg)),
-        onMessageUpdated: (msg) => add(MessageUpdated(msg)),
-        onTypingStatus: (uid, {required isTyping}) => add(
-          TypingIndicatorReceived(
-            conversationId: conversation!.id,
-            userId: uid,
-            isTyping: isTyping,
+      try {
+        await _chatService.subscribeToConversation(
+          conversation.id,
+          recipientUserId: peerUserId,
+          onMessageReceived: (msg) => add(MessageReceived(msg)),
+          onMessageUpdated: (msg) => add(MessageUpdated(msg)),
+          onTypingStatus: (uid, {required isTyping}) => add(
+            TypingIndicatorReceived(
+              conversationId: conversation!.id,
+              userId: uid,
+              isTyping: isTyping,
+            ),
           ),
-        ),
-      );
+        );
+      } on Object catch (_) {
+        // Non-blocking in offline or preview mode
+      }
 
       // 4. Mark unread messages as read
       add(MarkConversationRead(conversation.id));
@@ -138,10 +142,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         : currentState.conversation.getOtherParticipantUserId(
             _chatService.currentUserId,
           );
+    final convId = currentState.conversation.id.isNotEmpty
+        ? currentState.conversation.id
+        : event.conversationId;
 
     // Step 1: Create optimistic message for instantaneous UI rendering
     final optimisticMessage = ChatMessage.createOptimistic(
-      conversationId: event.conversationId,
+      conversationId: convId,
       senderId: _chatService.currentUserId,
       clientUuid: clientUuid,
       plaintext: event.plaintext,
@@ -170,7 +177,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     // Step 2: Encrypt and send to Supabase
     try {
       final confirmed = await _chatService.sendMessage(
-        conversationId: event.conversationId,
+        conversationId: convId,
         plaintext: event.plaintext,
         recipientUserId: effectiveRecipient,
         clientUuid: clientUuid,

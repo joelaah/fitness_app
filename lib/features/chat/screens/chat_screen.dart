@@ -23,6 +23,7 @@ class ChatScreen extends StatefulWidget {
     this.trainerSpecialty,
     this.initialConversation,
     this.chatBloc,
+    this.isTemplateCoach,
   });
 
   final String conversationId;
@@ -32,6 +33,7 @@ class ChatScreen extends StatefulWidget {
   final String? trainerSpecialty;
   final ChatConversation? initialConversation;
   final ChatBloc? chatBloc;
+  final bool? isTemplateCoach;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -41,6 +43,59 @@ class _ChatScreenState extends State<ChatScreen> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
   bool _canSend = false;
+  ChatBloc? _internalBloc;
+  bool _ownsBloc = false;
+  String? _activeConversationId;
+
+  /// Resolves the effective ChatBloc safely without throwing ProviderNotFoundException
+  ChatBloc _getEffectiveBloc() {
+    if (widget.chatBloc != null && !widget.chatBloc!.isClosed) {
+      return widget.chatBloc!;
+    }
+    if (_internalBloc != null && !_internalBloc!.isClosed) {
+      return _internalBloc!;
+    }
+    try {
+      final bloc = context.read<ChatBloc>();
+      if (!bloc.isClosed) return bloc;
+    } catch (_) {}
+
+    _internalBloc = ChatBloc();
+    _ownsBloc = true;
+    return _internalBloc!;
+  }
+
+  bool get _isTemplateCoach {
+    if (widget.isTemplateCoach != null) return widget.isTemplateCoach!;
+    final name = widget.trainerName.toLowerCase().trim();
+    final tid = widget.trainerId.toLowerCase().trim();
+    final uid = (widget.trainerUserId ?? '').toLowerCase().trim();
+
+    if (tid == 'trainer-1' ||
+        tid == 'trainer-2' ||
+        tid == 'trainer-3' ||
+        tid.startsWith('trainer-') ||
+        tid.startsWith('mock-') ||
+        tid.contains('template') ||
+        tid.contains('demo')) {
+      return true;
+    }
+    if (uid.startsWith('user-coach-') ||
+        uid.contains('mock') ||
+        uid.contains('demo') ||
+        uid.contains('template')) {
+      return true;
+    }
+    if (name == 'bob trainer' ||
+        name == 'charlie yoga' ||
+        name == 'diana vance' ||
+        name.contains('demo') ||
+        name.contains('template') ||
+        name.contains('sample')) {
+      return true;
+    }
+    return false;
+  }
 
   @override
   void initState() {
@@ -49,7 +104,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Initial load / subscription
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      (widget.chatBloc ?? context.read<ChatBloc>()).add(
+      if (!mounted) return;
+      _getEffectiveBloc().add(
         OpenConversation(
           conversationId: widget.conversationId,
           trainerId: widget.trainerId,
@@ -57,7 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
           trainerName: widget.trainerName,
         ),
       );
-      _scrollToBottom();
+      _scrollToBottom(animated: false);
     });
   }
 
@@ -67,6 +123,13 @@ class _ChatScreenState extends State<ChatScreen> {
       ..removeListener(_onTextChanged)
       ..dispose();
     _scrollController.dispose();
+    if (_ownsBloc) {
+      _internalBloc?.close();
+    } else {
+      try {
+        _getEffectiveBloc().add(const CloseConversation());
+      } catch (_) {}
+    }
     super.dispose();
   }
 
@@ -101,14 +164,45 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     _textController.clear();
-    (widget.chatBloc ?? context.read<ChatBloc>()).add(
+    final targetConvId = _activeConversationId ?? widget.conversationId;
+    _getEffectiveBloc().add(
       SendMessage(
-        conversationId: widget.conversationId,
+        conversationId: targetConvId,
         plaintext: text,
         recipientUserId: widget.trainerUserId ?? widget.trainerId,
       ),
     );
     _scrollToBottom();
+
+    if (_isTemplateCoach && mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Color(0xFFF59E0B),
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${widget.trainerName} is a template coach and cannot reply in real-time.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF1E293B),
+        ),
+      );
+    }
   }
 
   String _getInitials(String name) {
@@ -253,9 +347,10 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
       body: BlocConsumer<ChatBloc, ChatState>(
-        bloc: widget.chatBloc,
+        bloc: _getEffectiveBloc(),
         listener: (context, state) {
           if (state is ChatRoomActive) {
+            _activeConversationId = state.conversation.id;
             _scrollToBottom();
           }
         },
@@ -263,12 +358,22 @@ class _ChatScreenState extends State<ChatScreen> {
           var messages = const <ChatMessage>[];
           var isOtherUserTyping = false;
           var isLoading = false;
+          String? errorMessage;
 
-          if (state is ChatRoomLoading) {
+          if (state is ChatRoomLoading || state is ChatInitial) {
             isLoading = true;
           } else if (state is ChatRoomActive) {
-            messages = state.messages;
-            isOtherUserTyping = state.isOtherUserTyping;
+            final isMatching = state.conversation.id == widget.conversationId ||
+                state.conversation.id == _activeConversationId ||
+                state.conversation.trainerId == widget.trainerId;
+            if (isMatching) {
+              messages = state.messages;
+              isOtherUserTyping = state.isOtherUserTyping;
+            } else {
+              isLoading = true;
+            }
+          } else if (state is ChatError) {
+            errorMessage = state.message;
           }
 
           return Column(
@@ -276,7 +381,10 @@ class _ChatScreenState extends State<ChatScreen> {
               // Top informational zero-knowledge pill
               const E2eeSecurityBanner(),
 
-              // Chat Messages Stream List
+              // Prominent disclaimer banner for template coaches
+              if (_isTemplateCoach) _buildTemplateCoachBanner(),
+
+              // Chat Messages Stream List / Empty State / Error View
               Expanded(
                 child: isLoading
                     ? const Center(
@@ -286,49 +394,50 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                       )
-                    : messages.isEmpty
-                    ? _buildEmptyChatPrompt()
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final message = messages[index];
-                          final isFirst = index == 0;
-                          final prevMessage = !isFirst
-                              ? messages[index - 1]
-                              : null;
+                    : errorMessage != null && messages.isEmpty
+                        ? _buildErrorView(errorMessage)
+                        : messages.isEmpty
+                            ? _buildEmptyChatPrompt()
+                            : ListView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                itemCount: messages.length,
+                                itemBuilder: (context, index) {
+                                  final message = messages[index];
+                                  final isFirst = index == 0;
+                                  final prevMessage = !isFirst
+                                      ? messages[index - 1]
+                                      : null;
 
-                          final showDateDivider =
-                              isFirst ||
-                              (prevMessage != null &&
-                                  (prevMessage.createdAt.day !=
-                                          message.createdAt.day ||
-                                      prevMessage.createdAt.month !=
-                                          message.createdAt.month ||
-                                      prevMessage.createdAt.year !=
-                                          message.createdAt.year));
+                                  final showDateDivider =
+                                      isFirst ||
+                                      (prevMessage != null &&
+                                          (prevMessage.createdAt.day !=
+                                                  message.createdAt.day ||
+                                              prevMessage.createdAt.month !=
+                                                  message.createdAt.month ||
+                                              prevMessage.createdAt.year !=
+                                                  message.createdAt.year));
 
-                          return Column(
-                            children: [
-                              if (showDateDivider)
-                                _buildDateSeparator(message.createdAt),
-                              ChatMessageBubble(
-                                message: message,
-                                senderName: widget.trainerName,
-                                onRetry: () {
-                                  (widget.chatBloc ?? context.read<ChatBloc>())
-                                      .add(
-                                    RetrySendMessage(
-                                      clientUuid: message.clientUuid,
-                                    ),
+                                  return Column(
+                                    children: [
+                                      if (showDateDivider)
+                                        _buildDateSeparator(message.createdAt),
+                                      ChatMessageBubble(
+                                        message: message,
+                                        senderName: widget.trainerName,
+                                        onRetry: () {
+                                          _getEffectiveBloc().add(
+                                            RetrySendMessage(
+                                              clientUuid: message.clientUuid,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   );
                                 },
                               ),
-                            ],
-                          );
-                        },
-                      ),
               ),
 
               // Ephemeral Typing Indicator Bubble
@@ -339,6 +448,91 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTemplateCoachBanner() {
+    return Container(
+      key: const Key('template_coach_disclaimer_banner'),
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.smart_toy_outlined,
+              size: 16,
+              color: Color(0xFFF59E0B),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      'DEMO TEMPLATE COACH',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'CANNOT REPLY',
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFF59E0B),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${widget.trainerName} is a demonstration template coach. '
+                  'Template coaches cannot reply in real-time. You can still test sending encrypted messages below.',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    height: 1.35,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -366,9 +560,71 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Widget _buildErrorView(String error) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 36,
+                color: AppColors.error,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Unable to Load Chat',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.surfaceElevated,
+                foregroundColor: AppColors.primary,
+              ),
+              onPressed: () {
+                _getEffectiveBloc().add(
+                  OpenConversation(
+                    conversationId: widget.conversationId,
+                    trainerId: widget.trainerId,
+                    trainerUserId: widget.trainerUserId,
+                    trainerName: widget.trainerName,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Retry Connection'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyChatPrompt() {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -383,14 +639,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               child: const Icon(
-                Icons.lock_outline_rounded,
-                size: 40,
+                Icons.chat_bubble_outline_rounded,
+                size: 38,
                 color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 18),
             Text(
-              'Secure Channel Established',
+              'Say hello to ${widget.trainerName}!',
+              textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -399,8 +656,11 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start your conversation with ${widget.trainerName}. '
-              'Your workout plans, check-ins, and questions are secured.',
+              _isTemplateCoach
+                  ? 'Say hello to your coach! Messages are end-to-end encrypted.\n'
+                      'Note: ${widget.trainerName} is a demonstration template coach and cannot reply in real-time.'
+                  : 'Say hello to your coach! Messages are end-to-end encrypted. '
+                      'Your workout plans, check-ins, and questions are secured.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 13,
