@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fitness_app/features/routines/models/routine.dart';
 import 'package:fitness_app/features/routines/repositories/routine_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -31,7 +32,7 @@ class SharedPrefsRoutineRepository implements RoutineRepository {
       return list;
     } catch (e) {
       // In case of corrupted JSON, return empty list rather than crashing
-      print('Error parsing saved routines: $e');
+      debugPrint('Error parsing saved routines: $e');
       return [];
     }
   }

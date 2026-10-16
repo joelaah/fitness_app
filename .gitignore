@@ -16,6 +16,7 @@ migrate_working_dir/
 .env
 .env.*
 !.env.example
+!staging/.env.staging.example
 *.env
 *.keystore
 *.jks

@@ -19,6 +19,7 @@ import logging
 import os
 import re
 import time
+import threading
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -50,11 +51,40 @@ log = logging.getLogger("mock_supabase")
 # Database Storage Engine
 # ---------------------------------------------------------------------------
 
+class ThreadSafeAsyncRLock:
+    """
+    Thread-safe reentrant lock supporting both synchronous ('with lock:')
+    and asynchronous ('async with lock:') context managers across multiple
+    OS threads and event loops.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.RLock()
+
+    def __enter__(self) -> bool:
+        return self._lock.__enter__()
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> Any:
+        return self._lock.__exit__(exc_type, exc_val, exc_tb)
+
+    async def __aenter__(self) -> bool:
+        return self._lock.__enter__()
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> Any:
+        return self._lock.__exit__(exc_type, exc_val, exc_tb)
+
+    def acquire(self, blocking: bool = True, timeout: float = -1) -> bool:
+        return self._lock.acquire(blocking, timeout)
+
+    def release(self) -> None:
+        self._lock.release()
+
+
 class MockDatabase:
     """Thread-safe in-memory datastore for Supabase tables."""
 
     def __init__(self) -> None:
-        self.lock = asyncio.Lock()
+        self.lock = ThreadSafeAsyncRLock()
         self.auth_users: Dict[str, Dict[str, Any]] = {}
         self.profiles: Dict[str, Dict[str, Any]] = {}
         self.workout_sessions: Dict[str, Dict[str, Any]] = {}
@@ -62,6 +92,12 @@ class MockDatabase:
         self.workout_sets: Dict[str, Dict[str, Any]] = {}
         self.ai_recommendations: Dict[str, Dict[str, Any]] = {}
         self.exercises: Dict[str, Dict[str, Any]] = {}
+        # Milestone 1: Trainer Marketplace, Payments & Chat Tables
+        self.trainer_profiles: Dict[str, Dict[str, Any]] = {}
+        self.payment_transactions: Dict[str, Dict[str, Any]] = {}
+        self.chat_conversations: Dict[str, Dict[str, Any]] = {}
+        self.chat_messages: Dict[str, Dict[str, Any]] = {}
+        self.encryption_keys: Dict[str, Dict[str, Any]] = {}
 
     def get_table(self, name: str) -> Optional[Dict[str, Dict[str, Any]]]:
         return getattr(self, name, None)
@@ -74,6 +110,11 @@ class MockDatabase:
         self.workout_sets.clear()
         self.ai_recommendations.clear()
         self.exercises.clear()
+        self.trainer_profiles.clear()
+        self.payment_transactions.clear()
+        self.chat_conversations.clear()
+        self.chat_messages.clear()
+        self.encryption_keys.clear()
 
 db = MockDatabase()
 
@@ -223,30 +264,79 @@ def check_row_select(
     is_service_role: bool,
 ) -> bool:
     """
-    Evaluates RLS SELECT policies matching supabase_schema.sql.
+    Evaluates RLS SELECT policies matching supabase_schema.sql and 02_marketplace_payments_chat.sql.
     Returns True if row is readable by caller.
     """
     if is_service_role:
         return True
+
+    # Publicly readable tables (anonymous or authenticated)
+    if table in ("trainer_profiles", "exercises"):
+        # Policy: "Public can view trainer profiles" (USING true)
+        return True
+
     if not auth_uid:
         return False
 
     if table == "profiles":
-        # Policy: "Users can view own profile" (auth.uid() = id)
-        return row.get("id") == auth_uid
+        # Additive Policy: "Authenticated users can view profiles" (TO authenticated USING true)
+        # Allows clients and trainers to resolve names and profiles across the marketplace
+        return True
+
+    if table == "encryption_keys":
+        # Policy: "Authenticated users can view public keys" (TO authenticated USING true)
+        return True
+
+    if table == "payment_transactions":
+        # Policy: "Users and trainers can view own transactions"
+        # USING ((select auth.uid()) = user_id OR EXISTS (SELECT 1 FROM trainer_profiles tp WHERE tp.id = payment_transactions.trainer_id AND tp.user_id = (select auth.uid())))
+        if row.get("user_id") == auth_uid:
+            return True
+        tid = row.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "chat_conversations":
+        # Policy: "Participants can view conversation"
+        if row.get("user_id") == auth_uid:
+            return True
+        tid = row.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "chat_messages":
+        # Policy: "Participants can view messages"
+        cid = row.get("conversation_id")
+        conv = db.chat_conversations.get(cid)
+        if not conv:
+            return False
+        if conv.get("user_id") == auth_uid:
+            return True
+        tid = conv.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
 
     if table == "workout_sessions":
-        # Policy: "Users can view own workout sessions" (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
 
     if table == "workout_exercises":
-        # Policy: "Users can view own workout exercises" (EXISTS session.user_id = auth.uid())
         sess_id = row.get("workout_session_id")
         sess = db.workout_sessions.get(sess_id)
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "workout_sets":
-        # Policy: "Users can view own workout sets" (EXISTS exercise -> session.user_id = auth.uid())
         ex_id = row.get("workout_exercise_id")
         ex = db.workout_exercises.get(ex_id)
         if not ex:
@@ -255,12 +345,7 @@ def check_row_select(
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "ai_recommendations":
-        # Policy: "Users can view own AI recommendations" (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
-
-    if table == "exercises":
-        # Exercises catalog is public readable
-        return True
 
     return False
 
@@ -271,8 +356,7 @@ def check_row_insert(
     is_service_role: bool,
 ) -> bool:
     """
-    Evaluates RLS INSERT WITH CHECK policies matching supabase_schema.sql.
-    Returns True if row insertion is authorized.
+    Evaluates RLS INSERT WITH CHECK policies matching supabase_schema.sql and 02_marketplace_payments_chat.sql.
     """
     if is_service_role:
         return True
@@ -280,21 +364,60 @@ def check_row_insert(
         return False
 
     if table == "profiles":
-        # Policy: "Users can insert own profile" WITH CHECK (auth.uid() = id)
         return row.get("id") == auth_uid
 
+    if table == "trainer_profiles":
+        # Policy: "Users can insert own trainer profile" WITH CHECK ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
+    if table == "payment_transactions":
+        # Policy: "Users can insert payment transactions" WITH CHECK ((select auth.uid()) = user_id AND status = 'created')
+        return row.get("user_id") == auth_uid and row.get("status", "created") == "created"
+
+    if table == "chat_conversations":
+        # Policy: "Participants can insert conversation"
+        if row.get("user_id") == auth_uid:
+            return True
+        tid = row.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "chat_messages":
+        # Policy: "Participants can insert own message"
+        # WITH CHECK ((select auth.uid()) = sender_id AND participant check)
+        if row.get("sender_id") != auth_uid:
+            return False
+        cid = row.get("conversation_id")
+        conv = db.chat_conversations.get(cid)
+        if not conv:
+            return False
+        if conv.get("user_id") == auth_uid:
+            return True
+        tid = conv.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "encryption_keys":
+        # Policy: "Users can insert own public key" WITH CHECK ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
     if table == "workout_sessions":
-        # Policy: "Users can insert own workout sessions" WITH CHECK (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
 
     if table == "workout_exercises":
-        # Policy: "Users can insert own workout exercises" WITH CHECK (EXISTS session.user_id = auth.uid())
         sess_id = row.get("workout_session_id")
         sess = db.workout_sessions.get(sess_id)
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "workout_sets":
-        # Policy: "Users can insert own workout sets" WITH CHECK (EXISTS exercise -> session.user_id = auth.uid())
         ex_id = row.get("workout_exercise_id")
         ex = db.workout_exercises.get(ex_id)
         if not ex:
@@ -303,7 +426,6 @@ def check_row_insert(
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "ai_recommendations":
-        # Policy: "Users can insert own AI recommendations" WITH CHECK (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
 
     if table == "exercises":
@@ -318,7 +440,7 @@ def check_row_update(
     is_service_role: bool,
 ) -> bool:
     """
-    Evaluates RLS UPDATE policies matching supabase_schema.sql.
+    Evaluates RLS UPDATE USING policies.
     """
     if is_service_role:
         return True
@@ -326,21 +448,57 @@ def check_row_update(
         return False
 
     if table == "profiles":
-        # Policy: "Users can update own profile" USING (auth.uid() = id)
         return row.get("id") == auth_uid
 
+    if table == "trainer_profiles":
+        # Policy: "Trainers can update own profile" USING ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
+    if table == "payment_transactions":
+        # Policy: "Users can update pending transaction" USING ((select auth.uid()) = user_id AND status = 'created')
+        return row.get("user_id") == auth_uid and row.get("status") in ("created", "pending")
+
+    if table == "chat_conversations":
+        # Policy: "Participants can update conversation"
+        if row.get("user_id") == auth_uid:
+            return True
+        tid = row.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "chat_messages":
+        # Policy: "Participants can update message read_at"
+        cid = row.get("conversation_id")
+        conv = db.chat_conversations.get(cid)
+        if not conv:
+            return False
+        if conv.get("user_id") == auth_uid:
+            return True
+        tid = conv.get("trainer_id")
+        if tid == auth_uid:
+            return True
+        t_prof = db.trainer_profiles.get(tid)
+        if t_prof and (t_prof.get("user_id") == auth_uid or t_prof.get("id") == auth_uid):
+            return True
+        return False
+
+    if table == "encryption_keys":
+        # Policy: "Users can update own public key" USING ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
     if table == "workout_sessions":
-        # Policy: "Users can update own workout sessions" USING (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
 
     if table == "workout_exercises":
-        # Policy: "Users can update own workout exercises" USING (EXISTS session.user_id = auth.uid())
         sess_id = row.get("workout_session_id")
         sess = db.workout_sessions.get(sess_id)
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "workout_sets":
-        # Policy: "Users can update own workout sets" USING (EXISTS exercise -> session.user_id = auth.uid())
         ex_id = row.get("workout_exercise_id")
         ex = db.workout_exercises.get(ex_id)
         if not ex:
@@ -349,7 +507,6 @@ def check_row_update(
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table in ("ai_recommendations", "exercises"):
-        # No UPDATE policy -> service_role only
         return False
 
     return False
@@ -362,10 +519,7 @@ def check_row_update_check(
 ) -> bool:
     """
     Evaluates RLS UPDATE WITH CHECK policies matching supabase_schema.sql.
-    In PostgreSQL, when an UPDATE policy has no separate WITH CHECK clause,
-    the USING clause condition is enforced on the new row data.
-    Ensures that tenant ownership (user_id / id / foreign session link)
-    cannot be reassigned across tenants.
+    Ensures tenant ownership cannot be reassigned across tenants.
     """
     if is_service_role:
         return True
@@ -378,6 +532,20 @@ def check_row_update_check(
 
     if table == "profiles":
         if "id" in row and row.get("id") != auth_uid:
+            return False
+
+    if table == "trainer_profiles":
+        if "user_id" in row and row.get("user_id") != auth_uid:
+            return False
+
+    if table == "payment_transactions":
+        if "user_id" in row and row.get("user_id") != auth_uid:
+            return False
+        if row.get("status") != "created":
+            return False
+
+    if table == "encryption_keys":
+        if "user_id" in row and row.get("user_id") != auth_uid:
             return False
 
     return check_row_update(table, row, auth_uid, is_service_role)
@@ -396,22 +564,30 @@ def check_row_delete(
     if not auth_uid:
         return False
 
-    if table == "profiles":
-        # No DELETE policy -> service_role only
-        return False
+    if table == "trainer_profiles":
+        # Policy: "Trainers can delete own profile" USING ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
+    if table == "encryption_keys":
+        # Policy: "Users can delete own public key" USING ((select auth.uid()) = user_id)
+        return row.get("user_id") == auth_uid or row.get("id") == auth_uid
+
+    if table == "chat_messages":
+        # Sender can delete message
+        return row.get("sender_id") == auth_uid
+
+    if table == "chat_conversations":
+        return row.get("user_id") == auth_uid
 
     if table == "workout_sessions":
-        # Policy: "Users can delete own workout sessions" USING (auth.uid() = user_id)
         return row.get("user_id") == auth_uid
 
     if table == "workout_exercises":
-        # Policy: "Users can delete own workout exercises" USING (EXISTS session.user_id = auth.uid())
         sess_id = row.get("workout_session_id")
         sess = db.workout_sessions.get(sess_id)
         return bool(sess and sess.get("user_id") == auth_uid)
 
     if table == "workout_sets":
-        # Policy: "Users can delete own workout sets" USING (EXISTS exercise -> session.user_id = auth.uid())
         ex_id = row.get("workout_exercise_id")
         ex = db.workout_exercises.get(ex_id)
         if not ex:
@@ -419,10 +595,7 @@ def check_row_delete(
         sess = db.workout_sessions.get(ex.get("workout_session_id"))
         return bool(sess and sess.get("user_id") == auth_uid)
 
-    if table in ("ai_recommendations", "exercises"):
-        # No DELETE policy -> service_role only
-        return False
-
+    # profiles, payment_transactions, ai_recommendations, exercises
     return False
 
 # ---------------------------------------------------------------------------
@@ -493,13 +666,14 @@ def compare_values(field_val: Any, op: str, filter_val: str) -> bool:
                 pass
         return str(field_val) in options
 
-    # CS operator: contains (for arrays or lists)
+    # CS operator: contains (for arrays or lists, e.g. specialties=cs.{Strength})
     if op == "cs":
         if isinstance(field_val, list):
-            target = filter_val.strip("{}()")
-            targets = [t.strip() for t in target.split(",") if t.strip()]
-            return any(t in field_val for t in targets)
-        return filter_val in str(field_val)
+            target = filter_val.strip("{}()\"'")
+            targets = [t.strip().strip("\"'").lower() for t in target.split(",") if t.strip()]
+            field_val_lower = [str(x).strip().strip("\"'").lower() for x in field_val]
+            return all(t in field_val_lower for t in targets)
+        return filter_val.lower() in str(field_val).lower()
 
     # Numerical / Datetime ordering operators
     try:
@@ -801,9 +975,10 @@ async def rest_get(
 
     # Step 2: Apply query filters
     filtered_rows = []
+    query_items = request.query_params.multi_items()
     for row in accessible_rows:
         matches = True
-        for key, val in params.items():
+        for key, val in query_items:
             if key in ("select", "order", "limit", "offset", "on_conflict"):
                 continue
 
@@ -915,6 +1090,34 @@ async def rest_get(
                 sets.sort(key=lambda x: x.get("set_number", 0))
                 e["workout_sets"] = sets
 
+    elif table == "chat_conversations":
+        async with db.lock:
+            for c in result_rows:
+                cid = c.get("id")
+                if "chat_messages" in select_param:
+                    msgs = [
+                        copy.deepcopy(m)
+                        for m in db.chat_messages.values()
+                        if m.get("conversation_id") == cid
+                    ]
+                    msgs.sort(key=lambda x: str(x.get("created_at", "")))
+                    c["chat_messages"] = msgs
+                if "trainer_profiles" in select_param:
+                    tid = c.get("trainer_id")
+                    t_prof = db.trainer_profiles.get(tid)
+                    c["trainer_profiles"] = copy.deepcopy(t_prof) if t_prof else None
+                if "profiles" in select_param:
+                    uid = c.get("user_id")
+                    p = db.profiles.get(uid)
+                    c["profiles"] = copy.deepcopy(p) if p else None
+
+    elif table == "trainer_profiles" and "profiles" in select_param:
+        async with db.lock:
+            for tp in result_rows:
+                uid = tp.get("user_id") or tp.get("id")
+                p = db.profiles.get(uid)
+                tp["profiles"] = copy.deepcopy(p) if p else None
+
     # Step 6: Handle single object request header: Accept: application/vnd.pgrst.object+json
     if accept and "application/vnd.pgrst.object+json" in accept:
         if not result_rows:
@@ -922,6 +1125,72 @@ async def rest_get(
         return result_rows[0]
 
     return result_rows
+
+
+# ---------------------------------------------------------------------------
+# Check Constraints Validation Helper
+# ---------------------------------------------------------------------------
+
+def validate_check_constraints(table: str, row: Dict[str, Any]) -> Optional[JSONResponse]:
+    """
+    Validates SQL CHECK constraints across marketplace tables for both POST and PATCH.
+    Returns a 400 Bad Request JSONResponse with code 23514 on violation, or None if valid.
+    """
+    if table == "trainer_profiles":
+        try:
+            hr = float(row.get("hourly_rate", 0.0))
+            exp = int(row.get("experience_years", 0))
+            rating = float(row.get("rating", 5.0))
+            pct = float(row.get("platform_fee_pct", 10.0))
+        except (ValueError, TypeError):
+            return JSONResponse(
+                status_code=400,
+                content={"code": "23514", "message": "invalid numeric value for check constraint"},
+            )
+        if hr < 0.0:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "hourly_rate must be non-negative"})
+        if exp < 0:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "experience_years must be non-negative"})
+        if not (0.0 <= rating <= 5.0):
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "rating must be between 0.0 and 5.0"})
+        if not (0.0 <= pct <= 100.0):
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "platform_fee_pct must be between 0.0 and 100.0"})
+
+    elif table == "payment_transactions":
+        try:
+            amt = float(row.get("amount", 0.0))
+            fee_val = row.get("platform_fee_amount")
+            if fee_val is None:
+                fee_val = row.get("platform_fee", 0.0)
+            fee = float(fee_val)
+            tr_amt = float(row.get("trainer_amount", 0.0))
+        except (ValueError, TypeError):
+            return JSONResponse(
+                status_code=400,
+                content={"code": "23514", "message": "invalid numeric value for check constraint"},
+            )
+        status_val = row.get("status", "created")
+        if amt <= 0.0:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "amount must be greater than 0"})
+        if fee < 0.0 or tr_amt < 0.0:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "fee and trainer_amount must be non-negative"})
+        if abs(amt - (fee + tr_amt)) > 0.01:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "amount must equal platform_fee + trainer_amount"})
+        if status_val not in ("created", "authorized", "captured", "failed", "refunded"):
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "status invalid"})
+
+    elif table == "encryption_keys":
+        pk_val = row.get("public_key")
+        if not pk_val or len(str(pk_val)) < 40:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "public_key format invalid"})
+
+    elif table == "chat_messages":
+        nonce_val = row.get("nonce")
+        if not nonce_val or len(str(nonce_val)) < 12:
+            return JSONResponse(status_code=400, content={"code": "23514", "message": "nonce format invalid"})
+
+    return None
+
 
 @app.post("/rest/v1/{table}", status_code=status.HTTP_201_CREATED)
 async def rest_post(
@@ -959,102 +1228,218 @@ async def rest_post(
                 content={"code": "PGRST100", "message": "Request body items must be JSON objects"},
             )
 
-    is_upsert = prefer and "resolution=merge-duplicates" in prefer
+    on_conflict = request.query_params.get("on_conflict")
+    is_upsert = (prefer and "resolution=merge-duplicates" in prefer) or bool(on_conflict)
     inserted_rows = []
     now_iso = get_now_iso()
 
+    def resolve_existing_key(table_name: str, item: Dict[str, Any]) -> Optional[str]:
+        # 1. Direct PK match
+        if item.get("id") and str(item["id"]) in tbl:
+            return str(item["id"])
+
+        # 2. encryption_keys: UNIQUE (user_id)
+        if table_name == "encryption_keys":
+            uid = item.get("user_id") or item.get("id")
+            for k, r in tbl.items():
+                if r.get("user_id") == uid or k == uid:
+                    return k
+
+        # 3. trainer_profiles: UNIQUE (user_id)
+        if table_name == "trainer_profiles":
+            uid = item.get("user_id") or item.get("id")
+            for k, r in tbl.items():
+                if r.get("user_id") == uid or k == uid:
+                    return k
+
+        # 4. payment_transactions: UNIQUE (idempotency_key)
+        if table_name == "payment_transactions":
+            idem = item.get("idempotency_key")
+            if idem:
+                for k, r in tbl.items():
+                    if r.get("idempotency_key") == idem:
+                        return k
+
+        # 5. chat_conversations: UNIQUE (user_id, trainer_id)
+        if table_name == "chat_conversations":
+            uid = item.get("user_id")
+            tid = item.get("trainer_id")
+            if uid and tid:
+                for k, r in tbl.items():
+                    if r.get("user_id") == uid and r.get("trainer_id") == tid:
+                        return k
+
+        # 6. chat_messages: UNIQUE (client_uuid)
+        if table_name == "chat_messages":
+            cuuid = item.get("client_uuid")
+            if cuuid:
+                for k, r in tbl.items():
+                    if str(r.get("client_uuid")) == str(cuuid):
+                        return k
+
+        # 7. Explicit on_conflict parameter
+        if on_conflict and on_conflict in item:
+            val = item[on_conflict]
+            for k, r in tbl.items():
+                if r.get(on_conflict) == val:
+                    return k
+
+        return None
+
     async with db.lock:
-        # Pre-validate RLS on ALL rows before committing any row
+        # Pre-validate check constraints and RLS on ALL rows before committing
         for item in items:
-            pk = str(item.get("id")) if item.get("id") else None
-
-            # If upsert and item matches an existing PK -> evaluate UPDATE RLS policies
-            if is_upsert and pk and pk in tbl:
-                # 1. Evaluate USING policy on existing row
-                if not check_row_update(table, tbl[pk], auth_uid, is_admin):
-                    log.warning(
-                        "RLS VIOLATION: User %s unauthorized to upsert-update existing row %s in %s",
-                        auth_uid,
-                        pk,
-                        table,
-                    )
+            # Payment status anti-forgery on INSERT: non-admins can only insert payments with status='created'
+            if table == "payment_transactions" and not is_admin:
+                if item.get("status", "created") != "created":
                     return JSONResponse(
                         status_code=403,
                         content={
                             "code": "42501",
-                            "message": f'upsert violates row-level security policy for table "{table}"',
-                            "details": None,
-                            "hint": None,
+                            "message": 'new row violates row-level security policy for table "payment_transactions"',
                         },
                     )
 
-                # 2. Evaluate WITH CHECK policy on merged row
-                merged = copy.deepcopy(tbl[pk])
+            # Check constraints validation
+            err = validate_check_constraints(table, item)
+            if err:
+                return err
+
+            existing_pk = resolve_existing_key(table, item)
+
+            if existing_pk:
+                if not is_upsert:
+                    # Duplicate key error
+                    log.warning("Duplicate key violation in %s on existing row %s: %s", table, existing_pk, item)
+                    return JSONResponse(
+                        status_code=409,
+                        content={"code": "23505", "message": f'duplicate key value violates unique constraint for table "{table}"'},
+                    )
+
+                # Upsert: validate UPDATE RLS policies
+                if not check_row_update(table, tbl[existing_pk], auth_uid, is_admin):
+                    log.warning("RLS VIOLATION: User %s unauthorized to upsert-update %s pk=%s", auth_uid, table, existing_pk)
+                    return JSONResponse(
+                        status_code=403,
+                        content={"code": "42501", "message": f'upsert violates row-level security policy for table "{table}"'},
+                    )
+
+                merged = copy.deepcopy(tbl[existing_pk])
                 merged.update(item)
+                err = validate_check_constraints(table, merged)
+                if err:
+                    return err
                 if not check_row_update_check(table, merged, auth_uid, is_admin):
-                    log.warning(
-                        "RLS VIOLATION: User %s unauthorized WITH CHECK on upsert row %s in %s",
-                        auth_uid,
-                        pk,
-                        table,
-                    )
+                    log.warning("RLS VIOLATION: User %s unauthorized WITH CHECK on upsert %s pk=%s", auth_uid, table, existing_pk)
                     return JSONResponse(
                         status_code=403,
-                        content={
-                            "code": "42501",
-                            "message": f'new row violates row-level security policy for table "{table}"',
-                            "details": None,
-                            "hint": None,
-                        },
+                        content={"code": "42501", "message": f'new row violates row-level security policy for table "{table}"'},
                     )
             else:
-                # Evaluate INSERT WITH CHECK policy on new row
+                # Insert: validate INSERT RLS policies
                 if not check_row_insert(table, item, auth_uid, is_admin):
-                    log.warning(
-                        "RLS VIOLATION: User %s unauthorized to insert into %s: %s",
-                        auth_uid,
-                        table,
-                        item,
-                    )
+                    log.warning("RLS VIOLATION: User %s unauthorized to insert into %s: %s", auth_uid, table, item)
                     return JSONResponse(
                         status_code=403,
-                        content={
-                            "code": "42501",
-                            "message": f'new row violates row-level security policy for table "{table}"',
-                            "details": None,
-                            "hint": None,
-                        },
+                        content={"code": "42501", "message": f'new row violates row-level security policy for table "{table}"'},
                     )
 
         # Commit rows
         for item in items:
+            existing_pk = resolve_existing_key(table, item)
             row = copy.deepcopy(item)
-            if "id" not in row or not row["id"]:
-                row["id"] = str(uuid.uuid4())
-            if "created_at" not in row:
-                row["created_at"] = now_iso
 
-            pk = str(row["id"])
-            if pk in tbl and not is_upsert:
-                return JSONResponse(
-                    status_code=409,
-                    content={"code": "23505", "message": f"duplicate key value: {pk}"},
-                )
+            if existing_pk and is_upsert:
+                row["updated_at"] = now_iso
+                if table == "trainer_profiles":
+                    if "is_verified" in row and "verified" not in row:
+                        row["verified"] = row["is_verified"]
+                    elif "verified" in row and "is_verified" not in row:
+                        row["is_verified"] = row["verified"]
+                elif table == "payment_transactions":
+                    if "order_id" in row and "razorpay_order_id" not in row:
+                        row["razorpay_order_id"] = row["order_id"]
+                    elif "razorpay_order_id" in row and "order_id" not in row:
+                        row["order_id"] = row["razorpay_order_id"]
+                    if "payment_id" in row and "razorpay_payment_id" not in row:
+                        row["razorpay_payment_id"] = row["payment_id"]
+                    elif "razorpay_payment_id" in row and "payment_id" not in row:
+                        row["payment_id"] = row["razorpay_payment_id"]
+                    if "platform_fee" in row and "platform_fee_amount" not in row:
+                        row["platform_fee_amount"] = row["platform_fee"]
+                    elif "platform_fee_amount" in row and "platform_fee" not in row:
+                        row["platform_fee"] = row["platform_fee_amount"]
+                elif table == "chat_messages":
+                    if "read_at" in row and row["read_at"] and not row.get("is_read"):
+                        row["is_read"] = True
+                    elif row.get("is_read") and not row.get("read_at"):
+                        row["read_at"] = now_iso
 
-            if pk in tbl and is_upsert:
-                if not check_row_update(table, tbl[pk], auth_uid, is_admin):
-                    return JSONResponse(
-                        status_code=403,
-                        content={
-                            "code": "42501",
-                            "message": f'upsert violates row-level security policy for table "{table}"',
-                            "details": None,
-                            "hint": None,
-                        },
-                    )
-                tbl[pk].update(row)
-                inserted_rows.append(tbl[pk])
+                tbl[existing_pk].update(row)
+                inserted_rows.append(copy.deepcopy(tbl[existing_pk]))
             else:
+                if "id" not in row or not row["id"]:
+                    row["id"] = str(uuid.uuid4())
+                if "created_at" not in row:
+                    row["created_at"] = now_iso
+                if "updated_at" not in row:
+                    row["updated_at"] = now_iso
+
+                # Defaults & field harmonization
+                if table == "trainer_profiles":
+                    row.setdefault("hourly_rate", 0.0)
+                    row.setdefault("experience_years", 0)
+                    row.setdefault("bio", "")
+                    row.setdefault("certifications", [])
+                    row.setdefault("specialties", [])
+                    row.setdefault("availability", {"schedule": [], "active": True})
+                    if not is_admin:
+                        # Anti-tamper on INSERT: non-admins cannot override platform_fee_pct, rating, or verified
+                        row["platform_fee_pct"] = 10.0
+                        row["rating"] = 5.0
+                        row["verified"] = True
+                        row["is_verified"] = True
+                    else:
+                        row.setdefault("rating", 5.0)
+                        row.setdefault("platform_fee_pct", 10.0)
+                        if "is_verified" in row and "verified" not in row:
+                            row["verified"] = row["is_verified"]
+                        elif "verified" in row and "is_verified" not in row:
+                            row["is_verified"] = row["verified"]
+                        else:
+                            row.setdefault("verified", True)
+                            row.setdefault("is_verified", True)
+
+                elif table == "payment_transactions":
+                    row.setdefault("currency", "INR")
+                    row.setdefault("status", "created")
+                    row.setdefault("metadata", {})
+                    row.setdefault("platform_fee_percent", 10.0)
+                    if "order_id" in row and "razorpay_order_id" not in row:
+                        row["razorpay_order_id"] = row["order_id"]
+                    elif "razorpay_order_id" in row and "order_id" not in row:
+                        row["order_id"] = row["razorpay_order_id"]
+                    if "payment_id" in row and "razorpay_payment_id" not in row:
+                        row["razorpay_payment_id"] = row["payment_id"]
+                    elif "razorpay_payment_id" in row and "payment_id" not in row:
+                        row["payment_id"] = row["razorpay_payment_id"]
+                    if "platform_fee" in row and "platform_fee_amount" not in row:
+                        row["platform_fee_amount"] = row["platform_fee"]
+                    elif "platform_fee_amount" in row and "platform_fee" not in row:
+                        row["platform_fee"] = row["platform_fee_amount"]
+
+                elif table == "chat_messages":
+                    row.setdefault("mac", "")
+                    row.setdefault("is_read", False)
+                    row.setdefault("read_at", None)
+                    if "read_at" in row and row["read_at"] and not row.get("is_read"):
+                        row["is_read"] = True
+                    elif row.get("is_read") and not row.get("read_at"):
+                        row["read_at"] = now_iso
+                    if not row.get("client_uuid"):
+                        row["client_uuid"] = str(uuid.uuid4())
+
+                pk = str(row["id"])
                 tbl[pk] = row
                 inserted_rows.append(row)
 
@@ -1124,7 +1509,67 @@ async def rest_patch(
         # Pre-validate WITH CHECK on ALL matching target rows before applying mutations
         for pk in target_pks:
             proposed = copy.deepcopy(tbl[pk])
+            old_row = tbl[pk]
+
+            # Anti-tamper checks for non-admin
+            if not is_admin:
+                if table == "trainer_profiles":
+                    if ("verified" in body) or \
+                       ("is_verified" in body) or \
+                       ("platform_fee_pct" in body and body["platform_fee_pct"] != old_row.get("platform_fee_pct")) or \
+                       ("rating" in body and body["rating"] != old_row.get("rating")):
+                        return JSONResponse(
+                            status_code=403,
+                            content={"code": "42501", "message": "Trainers cannot modify verification, fee, or rating"},
+                        )
+                elif table == "payment_transactions":
+                    # Non-admin cannot transition payment status to captured
+                    if body.get("status") == "captured" or ("status" in body and body["status"] != "created"):
+                        return JSONResponse(
+                            status_code=403,
+                            content={"code": "42501", "message": "Users cannot set payment status to captured"},
+                        )
+                elif table == "chat_messages":
+                    tamper_fields = ("ciphertext", "nonce", "mac", "client_uuid", "conversation_id", "sender_id", "created_at")
+                    if any(f in body and body[f] != old_row.get(f) for f in tamper_fields):
+                        return JSONResponse(
+                            status_code=403,
+                            content={"code": "42501", "message": "Chat message content and metadata are strictly immutable"},
+                        )
+
             proposed.update(body)
+            proposed["updated_at"] = get_now_iso()
+
+            # Harmonize fields
+            if table == "trainer_profiles":
+                if "is_verified" in body and "verified" not in body:
+                    proposed["verified"] = proposed["is_verified"]
+                elif "verified" in body and "is_verified" not in body:
+                    proposed["is_verified"] = proposed["verified"]
+            elif table == "payment_transactions":
+                if "order_id" in body and "razorpay_order_id" not in body:
+                    proposed["razorpay_order_id"] = proposed["order_id"]
+                elif "razorpay_order_id" in body and "order_id" not in body:
+                    proposed["order_id"] = proposed["razorpay_order_id"]
+                if "payment_id" in body and "razorpay_payment_id" not in body:
+                    proposed["razorpay_payment_id"] = proposed["payment_id"]
+                elif "razorpay_payment_id" in body and "payment_id" not in body:
+                    proposed["payment_id"] = proposed["razorpay_payment_id"]
+                if "platform_fee" in body and "platform_fee_amount" not in body:
+                    proposed["platform_fee_amount"] = proposed["platform_fee"]
+                elif "platform_fee_amount" in body and "platform_fee" not in body:
+                    proposed["platform_fee"] = proposed["platform_fee_amount"]
+            elif table == "chat_messages":
+                if "read_at" in body and body["read_at"] and not body.get("is_read"):
+                    proposed["is_read"] = True
+                elif body.get("is_read") and not body.get("read_at"):
+                    proposed["read_at"] = proposed["updated_at"]
+
+            # Check constraints validation on proposed mutated row
+            err = validate_check_constraints(table, proposed)
+            if err:
+                return err
+
             if not check_row_update_check(table, proposed, auth_uid, is_admin):
                 log.warning(
                     "RLS VIOLATION: User %s unauthorized WITH CHECK update on %s pk=%s: %s",
@@ -1143,8 +1588,33 @@ async def rest_patch(
                     },
                 )
 
+        now_patch = get_now_iso()
         for pk in target_pks:
             tbl[pk].update(body)
+            tbl[pk]["updated_at"] = now_patch
+            if table == "trainer_profiles":
+                if "is_verified" in body and "verified" not in body:
+                    tbl[pk]["verified"] = tbl[pk]["is_verified"]
+                elif "verified" in body and "is_verified" not in body:
+                    tbl[pk]["is_verified"] = tbl[pk]["verified"]
+            elif table == "payment_transactions":
+                if "order_id" in body and "razorpay_order_id" not in body:
+                    tbl[pk]["razorpay_order_id"] = tbl[pk]["order_id"]
+                elif "razorpay_order_id" in body and "order_id" not in body:
+                    tbl[pk]["order_id"] = tbl[pk]["razorpay_order_id"]
+                if "payment_id" in body and "razorpay_payment_id" not in body:
+                    tbl[pk]["razorpay_payment_id"] = tbl[pk]["payment_id"]
+                elif "razorpay_payment_id" in body and "payment_id" not in body:
+                    tbl[pk]["payment_id"] = tbl[pk]["razorpay_payment_id"]
+                if "platform_fee" in body and "platform_fee_amount" not in body:
+                    tbl[pk]["platform_fee_amount"] = tbl[pk]["platform_fee"]
+                elif "platform_fee_amount" in body and "platform_fee" not in body:
+                    tbl[pk]["platform_fee"] = tbl[pk]["platform_fee_amount"]
+            elif table == "chat_messages":
+                if "read_at" in body and body["read_at"] and not body.get("is_read"):
+                    tbl[pk]["is_read"] = True
+                elif body.get("is_read") and not body.get("read_at"):
+                    tbl[pk]["read_at"] = now_patch
             updated_rows.append(copy.deepcopy(tbl[pk]))
 
     if prefer and "return=minimal" in prefer:
@@ -1226,21 +1696,39 @@ async def rest_delete(
                     db.workout_sets.pop(sid, None)
 
             elif table == "profiles":
-                # Clean up all user data
-                sess_ids = [
-                    sid
-                    for sid, s in list(db.workout_sessions.items())
-                    if s.get("user_id") == pk
-                ]
+                # Clean up all user workout data
+                sess_ids = [sid for sid, s in list(db.workout_sessions.items()) if s.get("user_id") == pk]
                 for sid in sess_ids:
                     db.workout_sessions.pop(sid, None)
-                rec_ids = [
-                    rid
-                    for rid, r in list(db.ai_recommendations.items())
-                    if r.get("user_id") == pk
-                ]
+                rec_ids = [rid for rid, r in list(db.ai_recommendations.items()) if r.get("user_id") == pk]
                 for rid in rec_ids:
                     db.ai_recommendations.pop(rid, None)
+                # Milestone 1: clean up user marketplace data
+                tp_ids = [tid for tid, tp in list(db.trainer_profiles.items()) if tp.get("user_id") == pk]
+                for tid in tp_ids:
+                    db.trainer_profiles.pop(tid, None)
+                ek_ids = [eid for eid, ek in list(db.encryption_keys.items()) if ek.get("user_id") == pk]
+                for eid in ek_ids:
+                    db.encryption_keys.pop(eid, None)
+                conv_ids = [cid for cid, c in list(db.chat_conversations.items()) if c.get("user_id") == pk or c.get("trainer_id") == pk]
+                for cid in conv_ids:
+                    db.chat_conversations.pop(cid, None)
+                    msg_ids = [mid for mid, m in list(db.chat_messages.items()) if m.get("conversation_id") == cid]
+                    for mid in msg_ids:
+                        db.chat_messages.pop(mid, None)
+
+            elif table == "trainer_profiles":
+                conv_ids = [cid for cid, c in list(db.chat_conversations.items()) if c.get("trainer_id") == pk]
+                for cid in conv_ids:
+                    db.chat_conversations.pop(cid, None)
+                    msg_ids = [mid for mid, m in list(db.chat_messages.items()) if m.get("conversation_id") == cid]
+                    for mid in msg_ids:
+                        db.chat_messages.pop(mid, None)
+
+            elif table == "chat_conversations":
+                msg_ids = [mid for mid, m in list(db.chat_messages.items()) if m.get("conversation_id") == pk]
+                for mid in msg_ids:
+                    db.chat_messages.pop(mid, None)
 
     if prefer and "return=minimal" in prefer:
         return Response(status_code=204)
@@ -1264,6 +1752,11 @@ async def health_check() -> Dict[str, Any]:
             "workout_sets": len(db.workout_sets),
             "ai_recommendations": len(db.ai_recommendations),
             "exercises": len(db.exercises),
+            "trainer_profiles": len(db.trainer_profiles),
+            "payment_transactions": len(db.payment_transactions),
+            "chat_conversations": len(db.chat_conversations),
+            "chat_messages": len(db.chat_messages),
+            "encryption_keys": len(db.encryption_keys),
         },
     }
 
@@ -1284,6 +1777,11 @@ async def mock_stats() -> Dict[str, Any]:
         "workout_sets": len(db.workout_sets),
         "ai_recommendations": len(db.ai_recommendations),
         "exercises": len(db.exercises),
+        "trainer_profiles": len(db.trainer_profiles),
+        "payment_transactions": len(db.payment_transactions),
+        "chat_conversations": len(db.chat_conversations),
+        "chat_messages": len(db.chat_messages),
+        "encryption_keys": len(db.encryption_keys),
     }
 
 # ---------------------------------------------------------------------------

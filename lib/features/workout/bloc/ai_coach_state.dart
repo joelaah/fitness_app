@@ -24,7 +24,7 @@ class ChatMessage extends Equatable {
   bool get isAssistant => role == 'assistant';
   bool get isFallback => sourceType == 'local_fallback';
 
-  /// Index operator for backwards compatibility with Map<String, dynamic> lookups.
+  /// Index operator for backwards compatibility with `Map<String, dynamic>` lookups.
   dynamic operator [](String key) {
     switch (key) {
       case 'role':

@@ -4,7 +4,6 @@ import 'package:fitness_app/core/widgets/empty_state_widget.dart';
 import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/screens/history_detail_screen.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -216,7 +215,7 @@ class _StatChip extends StatelessWidget {
 }
 // All History View - grouped by day
 class _AllHistoryView extends StatelessWidget {
-  const _AllHistoryView({Key? key}) : super(key: key);
+  const _AllHistoryView();
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +267,7 @@ class _AllHistoryView extends StatelessWidget {
 
 // By Routine History View - grouped by routine
 class _ByRoutineHistoryView extends StatelessWidget {
-  const _ByRoutineHistoryView({Key? key}) : super(key: key);
+  const _ByRoutineHistoryView();
 
   @override
   Widget build(BuildContext context) {

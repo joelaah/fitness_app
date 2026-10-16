@@ -313,7 +313,7 @@ class TestRowLevelSecurity:
         client.post("/rest/v1/workout_sessions", json={"id": sess_id, "user_id": user_a, "routine_name": "A's Session", "started_at": "2026-10-01T10:00:00Z"}, headers=headers_a)
 
         # Service role headers
-        service_headers = {"apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_service_role"}
+        service_headers = {"apikey": SERVICE_ROLE_KEY}
         res = client.get("/rest/v1/workout_sessions", headers=service_headers)
         assert res.status_code == 200
         assert any(s["id"] == sess_id for s in res.json())

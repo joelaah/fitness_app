@@ -8,7 +8,6 @@ import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/services/rag_recommendation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 class AiCoachScreen extends StatelessWidget {
   const AiCoachScreen({
