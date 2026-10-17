@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitness_app/core/config/supabase_config.dart';
+import 'package:fitness_app/core/network/resilient_network_client.dart';
 import 'package:fitness_app/features/payments/models/payment_transaction.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -15,15 +16,32 @@ class PaymentService {
     String? baseUrl,
     SupabaseClient? supabaseClient,
     Uuid? uuid,
+    Duration Function(int retryAttempt)? retryDelayProvider,
+    this.maxRetries = 0,
   })  : _client = client ?? http.Client(),
         _baseUrl = baseUrl ?? _resolveBaseUrl(),
         _supabaseClient = supabaseClient,
-        _uuid = uuid ?? const Uuid();
+        _uuid = uuid ?? const Uuid(),
+        _networkClient = ResilientNetworkClient(
+          client: client,
+          timeout: _timeout,
+          maxRetries: maxRetries,
+          retryDelayProvider: retryDelayProvider ??
+              defaultDelayProvider ??
+              ResilientNetworkClient.defaultDelayProvider,
+        );
+
+  final int maxRetries;
 
   final http.Client _client;
   final String _baseUrl;
   final SupabaseClient? _supabaseClient;
   final Uuid _uuid;
+  final ResilientNetworkClient _networkClient;
+
+  /// Global default delay provider for fast test execution
+  static Duration Function(int retryAttempt)? defaultDelayProvider =
+      ResilientNetworkClient.defaultDelayProvider;
 
   /// Active idempotency key cache (contextKey -> idempotencyKey).
   /// Preserves the key during retries after network drops.
@@ -40,7 +58,7 @@ class PaymentService {
   static List<PaymentTransaction> get mockTransactions =>
       List<PaymentTransaction>.unmodifiable(_mockTransactions);
 
-  static const Duration _timeout = Duration(seconds: 4);
+  static const Duration _timeout = Duration(seconds: 15);
 
   // ── URL & Auth Resolution ───────────────────────────────────────────
 
@@ -113,15 +131,13 @@ class PaymentService {
   Future<PaymentConfig> fetchConfig({bool forceRefresh = false}) async {
     final uri = Uri.parse('$_baseUrl/payments/config');
     try {
-      final response = await _client
-          .get(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ${_getAuthToken()}',
-            },
-          )
-          .timeout(_timeout);
+      final response = await _networkClient.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${_getAuthToken()}',
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -172,16 +188,14 @@ class PaymentService {
 
     final uri = Uri.parse('$_baseUrl/payments/create-order');
     try {
-      final response = await _client
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ${_getAuthToken()}',
-            },
-            body: json.encode(payload.toJson()),
-          )
-          .timeout(_timeout);
+      final response = await _networkClient.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${_getAuthToken()}',
+        },
+        body: json.encode(payload.toJson()),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -189,7 +203,14 @@ class PaymentService {
       }
 
       debugPrint('create-order HTTP ${response.statusCode}: ${response.body}');
-      throw Exception('Payment order creation failed: ${response.statusCode}');
+      throw NetworkResiliencyException(
+        message: ResilientNetworkClient.formatFriendlyErrorMessage(
+          'HTTP ${response.statusCode}',
+          fallback:
+              'Payment server is temporarily unavailable (HTTP ${response.statusCode}). Please try again in a few moments.',
+        ),
+        statusCode: response.statusCode,
+      );
     } on Exception catch (e) {
       debugPrint('PaymentService createOrder exception fallback: $e');
       return _createOfflineMockOrder(payload);
@@ -210,16 +231,14 @@ class PaymentService {
 
     final uri = Uri.parse('$_baseUrl/payments/verify');
     try {
-      final response = await _client
-          .post(
-            uri,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ${_getAuthToken()}',
-            },
-            body: json.encode(payload.toJson()),
-          )
-          .timeout(_timeout);
+      final response = await _networkClient.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${_getAuthToken()}',
+        },
+        body: json.encode(payload.toJson()),
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;

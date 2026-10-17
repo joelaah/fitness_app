@@ -37,3 +37,9 @@ class AiCoachMessageSent extends AiCoachEvent {
 class AiCoachReset extends AiCoachEvent {
   const AiCoachReset();
 }
+
+/// Dispatched to query and update the current remaining quota and exceeded status.
+class AiCoachQuotaChecked extends AiCoachEvent {
+  const AiCoachQuotaChecked();
+}
+

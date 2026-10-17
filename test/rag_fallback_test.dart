@@ -6,6 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
+  setUp(() {
+    RagRecommendationService.defaultDelayProvider = (_) => Duration.zero;
+  });
+
+  tearDown(() {
+    RagRecommendationService.defaultDelayProvider = null;
+  });
+
   group('RagRecommendationService Local Fallback Tests', () {
     test('buildLocalFallbackRecommendation handles empty sessions gracefully', () {
       final rec = RagRecommendationService.buildLocalFallbackRecommendation(null);

@@ -6,6 +6,7 @@ import 'package:fitness_app/features/workout/bloc/ai_coach_bloc.dart';
 import 'package:fitness_app/features/workout/bloc/ai_coach_event.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/repositories/workout_history_repository.dart';
+import 'package:fitness_app/features/auth/services/auth_service.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
 import 'package:fitness_app/main_screen.dart';
 import 'package:flutter/material.dart';
@@ -29,10 +30,11 @@ void main() async {
           SupabaseConfig.isInitialized = true;
           // Non-blocking background session check / anonymous sign-in
           // Requires: Supabase Dashboard → Authentication → Providers → Anonymous → Enable
-          if (supabase.client.auth.currentUser == null) {
-            supabase.client.auth.signInAnonymously().then((_) {
+          final authService = AuthService(client: supabase.client);
+          if (authService.currentUser == null) {
+            authService.signInAnonymously().then((_) {
               debugPrint('Anonymous user session established: '
-                  '${supabase.client.auth.currentUser?.id}');
+                  '${authService.currentUserId}');
             }).catchError((Object e) {
               debugPrint('Background anonymous auth notice: $e');
             });

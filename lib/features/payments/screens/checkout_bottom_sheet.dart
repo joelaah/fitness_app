@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:fitness_app/core/network/resilient_network_client.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
@@ -264,7 +265,7 @@ class _CheckoutBottomSheetState extends State<CheckoutBottomSheet> {
       if (!mounted) return;
       setState(() {
         _phase = CheckoutPhase.failure;
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        _errorMessage = ResilientNetworkClient.formatFriendlyErrorMessage(e);
       });
     }
   }

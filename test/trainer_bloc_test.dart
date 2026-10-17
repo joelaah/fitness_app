@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:fitness_app/features/trainers/bloc/trainer_bloc.dart';
 import 'package:fitness_app/features/trainers/bloc/trainer_event.dart';
 import 'package:fitness_app/features/trainers/bloc/trainer_state.dart';
@@ -11,10 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 class TrainerProfileData implements FilterableTrainer {
   final String id;
   final String userId;
+  @override
   final String bio;
   final List<String> certifications;
+  @override
   final List<String> specialties;
+  @override
   final double hourlyRate;
+  @override
   final double rating;
   final double platformFeePct;
   final bool verified;

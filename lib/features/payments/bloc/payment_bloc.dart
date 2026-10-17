@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:fitness_app/core/network/resilient_network_client.dart';
 import 'package:fitness_app/features/payments/bloc/payment_event.dart';
 import 'package:fitness_app/features/payments/bloc/payment_state.dart';
 import 'package:fitness_app/features/payments/models/payment_transaction.dart';
@@ -93,7 +94,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       }
       emit(
         PaymentFailure(
-          message: 'Failed to create payment order: $e',
+          message: ResilientNetworkClient.formatFriendlyErrorMessage(
+            e,
+            fallback: 'Failed to create payment order. Please try again.',
+          ),
           cachedIdempotencyKey: key,
         ),
       );
@@ -200,7 +204,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     } on Exception catch (e) {
       emit(
         PaymentFailure(
-          message: 'Verification exception: $e',
+          message: ResilientNetworkClient.formatFriendlyErrorMessage(
+            e,
+            fallback: 'Payment verification failed. Please try again.',
+          ),
           errorCode: 2,
           cachedIdempotencyKey: _activeIdempotencyKey,
         ),

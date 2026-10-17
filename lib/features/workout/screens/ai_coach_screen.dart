@@ -7,6 +7,7 @@ import 'package:fitness_app/features/workout/bloc/ai_coach_event.dart';
 import 'package:fitness_app/features/workout/bloc/ai_coach_state.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/services/rag_recommendation_service.dart';
+import 'package:fitness_app/features/workout/widgets/ai_quota_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -42,7 +43,9 @@ class AiCoachScreen extends StatelessWidget {
           final sessions = workoutProvider.historyRepository.getAll();
           return AiCoachBloc(
             recommendationService: recommendationService,
-          )..add(AiCoachRecommendationsRequested(sessions: sessions));
+          )
+            ..add(const AiCoachQuotaChecked())
+            ..add(AiCoachRecommendationsRequested(sessions: sessions));
         },
         child: const _AiCoachView(),
       );
@@ -89,12 +92,26 @@ class _AiCoachViewState extends State<_AiCoachView> {
     });
   }
 
+  Future<void> _showUpgradeDialog() async {
+    final bloc = context.read<AiCoachBloc>();
+    await AiQuotaDialog.show(context);
+    if (mounted) {
+      bloc.add(const AiCoachQuotaChecked());
+    }
+  }
+
   void _sendMessage([String? promptText]) {
     final text = promptText ?? _textController.text.trim();
     if (text.isEmpty) return;
 
+    final bloc = context.read<AiCoachBloc>();
+    if (bloc.state.isQuotaExceeded) {
+      _showUpgradeDialog();
+      return;
+    }
+
     _textController.clear();
-    context.read<AiCoachBloc>().add(AiCoachMessageSent(text));
+    bloc.add(AiCoachMessageSent(text));
   }
 
   @override
@@ -105,9 +122,14 @@ class _AiCoachViewState extends State<_AiCoachView> {
     final isDesktop = AppBreakpoints.isDesktop(context);
 
     return BlocConsumer<AiCoachBloc, AiCoachState>(
+      listenWhen: (previous, current) =>
+          (!previous.isQuotaExceeded && current.isQuotaExceeded) ||
+          (previous.isFailure != current.isFailure),
       listener: (context, state) {
         _scrollToBottom();
-        if (state.isFailure &&
+        if (state.isQuotaExceeded) {
+          _showUpgradeDialog();
+        } else if (state.isFailure &&
             state.recommendation != null &&
             state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -437,6 +459,63 @@ class _AiCoachViewState extends State<_AiCoachView> {
                 },
               ),
             ),
+            if (state.isQuotaExceeded)
+              Container(
+                key: const Key('ai_quota_upgrade_prompt'),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Daily AI limit reached (5/5). Upgrade for unlimited coaching.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      key: const Key('upgrade_prompt_button'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => _showUpgradeDialog(),
+                      child: const Text(
+                        'Upgrade',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 8),
 
             // Chat input bar

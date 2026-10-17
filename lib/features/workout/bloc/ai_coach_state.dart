@@ -54,6 +54,8 @@ class AiCoachState extends Equatable {
     this.messages = const [initialChatMessage],
     this.isSending = false,
     this.errorMessage,
+    this.isQuotaExceeded = false,
+    this.remainingQueries,
   });
 
   static const ChatMessage initialChatMessage = ChatMessage(
@@ -69,6 +71,8 @@ class AiCoachState extends Equatable {
   final List<ChatMessage> messages;
   final bool isSending;
   final String? errorMessage;
+  final bool isQuotaExceeded;
+  final int? remainingQueries;
 
   bool get isLoading => status == AiCoachStatus.loading;
   bool get isSuccess => status == AiCoachStatus.success;
@@ -80,6 +84,8 @@ class AiCoachState extends Equatable {
     List<ChatMessage>? messages,
     bool? isSending,
     String? Function()? errorMessage,
+    bool? isQuotaExceeded,
+    int? Function()? remainingQueries,
   }) {
     return AiCoachState(
       status: status ?? this.status,
@@ -88,6 +94,9 @@ class AiCoachState extends Equatable {
       messages: messages ?? this.messages,
       isSending: isSending ?? this.isSending,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      isQuotaExceeded: isQuotaExceeded ?? this.isQuotaExceeded,
+      remainingQueries:
+          remainingQueries != null ? remainingQueries() : this.remainingQueries,
     );
   }
 
@@ -98,5 +107,7 @@ class AiCoachState extends Equatable {
         messages,
         isSending,
         errorMessage,
+        isQuotaExceeded,
+        remainingQueries,
       ];
 }

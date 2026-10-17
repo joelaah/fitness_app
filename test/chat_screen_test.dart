@@ -1,12 +1,9 @@
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
-import 'package:fitness_app/features/chat/bloc/chat_state.dart';
-import 'package:fitness_app/features/chat/models/chat_message.dart';
 import 'package:fitness_app/features/chat/screens/chat_screen.dart';
 import 'package:fitness_app/features/chat/widgets/chat_message_bubble.dart';
 import 'package:fitness_app/features/chat/widgets/e2ee_security_banner.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

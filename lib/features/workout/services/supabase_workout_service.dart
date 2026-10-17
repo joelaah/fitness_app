@@ -1,4 +1,5 @@
 import 'package:fitness_app/core/config/supabase_config.dart';
+import 'package:fitness_app/core/network/resilient_network_client.dart';
 import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,7 +20,10 @@ class SupabaseWorkoutService {
         return;
       }
 
-      // 1. Insert or update workout_sessions
+      await ResilientNetworkClient(
+        retryDelayProvider: ResilientNetworkClient.defaultDelayProvider,
+      ).execute(() async {
+        // 1. Insert or update workout_sessions
       await client.from('workout_sessions').upsert({
         'id': session.id,
         'user_id': userId,
@@ -77,6 +81,7 @@ class SupabaseWorkoutService {
       if (setsToUpsert.isNotEmpty) {
         await client.from('workout_sets').upsert(setsToUpsert);
       }
+      });
 
       debugPrint(
         'Successfully synced session ${session.id} to Supabase in batch.',

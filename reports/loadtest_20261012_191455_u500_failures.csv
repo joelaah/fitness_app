@@ -1,0 +1,2 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+GET,/rest/v1/exercises (filter muscle),"ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)",1,2026-10-12T13:45:17Z,2026-10-12T13:45:17Z

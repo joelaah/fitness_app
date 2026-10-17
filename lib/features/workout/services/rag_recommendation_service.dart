@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitness_app/core/config/supabase_config.dart';
+import 'package:fitness_app/core/network/resilient_network_client.dart';
 import 'package:fitness_app/features/workout/models/ai_recommendation.dart';
 import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:flutter/foundation.dart';
@@ -12,17 +13,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Handles authentication, payload serialization, error states, local caching,
 /// client-side rate limiting, and input sanitization.
 ///
-/// Includes automatic warm-up pinging and retry logic to handle Render.com
-/// free-tier cold starts without requiring the user to send duplicate requests.
+/// Includes automatic warm-up pinging and exponential backoff retry logic (1s, 2s, 4s)
+/// with 15s timeout to handle cold starts and transient network failures resiliently.
 class RagRecommendationService {
   RagRecommendationService({
     String? baseUrl,
     SharedPreferences? prefs,
     http.Client? client,
+    Duration Function(int retryAttempt)? retryDelayProvider,
     bool skipWarmUp = false,
   })  : _baseUrl = baseUrl ?? _defaultBaseUrl(),
         _prefs = prefs,
-        _client = client ?? http.Client() {
+        _client = client ?? http.Client(),
+        _retryDelayProvider = retryDelayProvider {
     // Fire-and-forget warm-up ping so the server starts waking immediately
     if (!skipWarmUp) {
       warmUp();
@@ -32,16 +35,19 @@ class RagRecommendationService {
   final String _baseUrl;
   final SharedPreferences? _prefs;
   final http.Client _client;
+  final Duration Function(int retryAttempt)? _retryDelayProvider;
+
+  /// Global default delay provider for fast test execution
+  static Duration Function(int retryAttempt)? defaultDelayProvider =
+      ResilientNetworkClient.defaultDelayProvider;
 
   static const _cacheKey = 'cached_ai_recommendation';
 
-  /// Maximum number of automatic retries for cold-start failures
-  static const _maxRetries = 1;
+  /// Maximum number of automatic retries for cold-start and transient failures (up to 3 retries)
+  static const _maxRetries = 3;
 
-  /// Request timeout threshold. Render.com free-tier backends sleep after inactivity;
-  /// if requests time out (>10s) or fail during warm-up, we gracefully fallback
-  /// to local routine recommendations to prevent the client from freezing.
-  static const _requestTimeout = Duration(seconds: 10);
+  /// Request timeout threshold: 15-second timeout for remote AI calls.
+  static const _requestTimeout = Duration(seconds: 15);
 
   /// Whether a warm-up ping is already in-flight (avoids duplicate pings)
   static bool _warmUpInFlight = false;
@@ -250,12 +256,18 @@ class RagRecommendationService {
     for (var attempt = 0; attempt <= _maxRetries; attempt++) {
       try {
         if (attempt > 0) {
-          // Exponential backoff: 2s, 4s between retries
-          final delay = Duration(seconds: 2 * attempt);
+          // Exponential backoff: 1s, 2s, 4s between retries
+          final delay = _retryDelayProvider != null
+              ? _retryDelayProvider(attempt)
+              : (defaultDelayProvider != null
+                  ? defaultDelayProvider!(attempt)
+                  : ResilientNetworkClient.calculateDelay(attempt));
           debugPrint(
             'RAG recommend retry $attempt after ${delay.inSeconds}s',
           );
-          await Future<void>.delayed(delay);
+          if (delay > Duration.zero) {
+            await Future<void>.delayed(delay);
+          }
         }
 
         final response = await _client
@@ -285,36 +297,38 @@ class RagRecommendationService {
           throw RateLimitException(
             'The AI server is busy. Please try again in a minute.',
           );
-        } else if (response.statusCode >= 500 &&
+        } else if (ResilientNetworkClient.isTransientStatusCode(response.statusCode) &&
             attempt < _maxRetries) {
           lastError = Exception(
             'Server returned ${response.statusCode} (server warming up)',
           );
           continue;
         } else {
-          throw Exception(
+          lastError = Exception(
             'Server returned ${response.statusCode}',
           );
+          break; // Non-transient status code (400, 401, 404, etc.) or retries exhausted: fail fast!
         }
       } on RateLimitException {
         rethrow; // Never retry rate-limit errors
       } on TimeoutException catch (e) {
         lastError = e;
-        debugPrint('RAG recommend attempt $attempt timed out (>10s threshold reached)');
-        // Render free-tier cold start detected. Break early rather than blocking client.
-        break;
+        debugPrint('RAG recommend attempt $attempt timed out (>15s threshold reached)');
+        if (attempt >= _maxRetries) break;
       } catch (e) {
         if (e is Exception) lastError = e;
         debugPrint('RAG API Error (attempt $attempt): $e');
-        if (attempt >= _maxRetries) break;
+        if (!ResilientNetworkClient.isTransientError(e) || attempt >= _maxRetries) {
+          break; // Fail fast on non-transient errors (FormatException, etc.)
+        }
       }
     }
 
-    // Free-tier cold start or timeout (>10s) encountered:
+    // Free-tier cold start or timeout (>15s) encountered:
     // Fire-and-forget background ping to wake Render server up
     unawaited(warmUp());
 
-    debugPrint('RAG API: Cold start or timeout (>10s) detected ($lastError). Falling back to local routine recommendations.');
+    debugPrint('RAG API: Cold start or timeout (>15s) detected ($lastError). Falling back to local routine recommendations.');
 
     // Gracefully fallback to locally synthesized routine recommendations with warming-up notice
     return buildLocalFallbackRecommendation(sessions);
@@ -516,11 +530,17 @@ class RagRecommendationService {
     for (var attempt = 0; attempt <= _maxRetries; attempt++) {
       try {
         if (attempt > 0) {
-          final delay = Duration(seconds: 2 * attempt);
+          final delay = _retryDelayProvider != null
+              ? _retryDelayProvider(attempt)
+              : (defaultDelayProvider != null
+                  ? defaultDelayProvider!(attempt)
+                  : ResilientNetworkClient.calculateDelay(attempt));
           debugPrint(
             'RAG chat retry $attempt after ${delay.inSeconds}s',
           );
-          await Future<void>.delayed(delay);
+          if (delay > Duration.zero) {
+            await Future<void>.delayed(delay);
+          }
         }
 
         final response = await _client
@@ -540,27 +560,30 @@ class RagRecommendationService {
           throw RateLimitException(
             'The AI server is busy. Please try again in a minute.',
           );
-        } else if (response.statusCode >= 500 &&
+        } else if (ResilientNetworkClient.isTransientStatusCode(response.statusCode) &&
             attempt < _maxRetries) {
           lastError = Exception(
             'Chat server error ${response.statusCode} (server warming up)',
           );
           continue;
         } else {
-          throw Exception(
+          lastError = Exception(
             'Chat server error ${response.statusCode}',
           );
+          break; // Non-transient status code (400, 401, 404, etc.) or retries exhausted: fail fast!
         }
       } on RateLimitException {
         rethrow;
       } on TimeoutException catch (e) {
         lastError = e;
-        debugPrint('RAG chat attempt $attempt timed out (>10s threshold reached)');
-        break;
+        debugPrint('RAG chat attempt $attempt timed out (>15s threshold reached)');
+        if (attempt >= _maxRetries) break;
       } catch (e) {
         if (e is Exception) lastError = e;
         debugPrint('RAG chat error (attempt $attempt): $e');
-        if (attempt >= _maxRetries) break;
+        if (!ResilientNetworkClient.isTransientError(e) || attempt >= _maxRetries) {
+          break; // Fail fast on non-transient errors (FormatException, etc.)
+        }
       }
     }
 
@@ -568,13 +591,13 @@ class RagRecommendationService {
     unawaited(warmUp());
 
     debugPrint(
-      'RAG Chat: Cold start or timeout (>10s) detected ($lastError). Returning fallback guidance.',
+      'RAG Chat: Cold start or timeout (>15s) detected ($lastError). Returning fallback guidance.',
     );
 
     // Graceful fallback response when Render backend is waking up
     return {
       'reply':
-          'The AI Coach server is currently spinning up from cold sleep (Render free-tier). In the meantime, focus on progressive overload, 7-9 hours of sleep, and stay consistent with your scheduled workouts! Please try asking again in ~30 seconds once the server is awake.',
+          'The AI Coach server is currently spinning up from cold sleep (Render free-tier) or timed out after 3 retries. In the meantime, focus on progressive overload, 7-9 hours of sleep, and stay consistent with your scheduled workouts! Please try asking again in ~30 seconds once the server is awake.',
       'sources': ['Local Coach Guide'],
       'pipeline_source': 'local_fallback',
     };

@@ -1,17 +1,12 @@
-import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/core/widgets/adaptive_navigation_rail.dart';
-import 'package:fitness_app/core/widgets/animated_neon_volume_ring.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
 import 'package:fitness_app/features/routines/providers/routine_provider.dart';
 import 'package:fitness_app/features/routines/repositories/shared_prefs_routine_repository.dart';
-import 'package:fitness_app/features/routines/screens/routines_screen.dart';
 import 'package:fitness_app/features/trainers/screens/trainer_discovery_screen.dart';
-import 'package:fitness_app/features/trainers/widgets/trainer_card.dart';
 import 'package:fitness_app/features/workout/bloc/ai_coach_bloc.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/repositories/workout_history_repository.dart';
-import 'package:fitness_app/features/workout/screens/ai_coach_screen.dart';
 import 'package:fitness_app/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

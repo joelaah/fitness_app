@@ -150,7 +150,7 @@ void main() {
               throw http.ClientException('Connection reset by peer');
             }
             final body = json.decode(request.body) as Map<String, dynamic>;
-            final key = body['idempotency_key'] as String;
+            expect(body['idempotency_key'], isNotNull);
             final amt = (body['amount'] as num).toDouble();
             final split = PlatformFeeCalculator.calculateSplit(amount: amt);
             return http.Response(

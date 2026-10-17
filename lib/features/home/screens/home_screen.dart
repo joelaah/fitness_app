@@ -1,6 +1,7 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
+import 'package:fitness_app/features/auth/widgets/guest_expiration_banner.dart';
 import 'package:fitness_app/features/workout/widgets/ai_coach_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +33,8 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
+              const GuestExpirationBanner(),
+              const SizedBox(height: 8),
               Text(
                 'Good morning,',
                 style: theme.textTheme.titleMedium?.copyWith(
