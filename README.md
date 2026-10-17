@@ -79,7 +79,7 @@ PulseFit AI implements end-to-end network safety across both the Flutter client 
 
 ---
 
-## 👤 Recruiter & Reviewer Guide
+## 👤 Reviewer Guide
 
 Recruiters and hiring managers can explore the app immediately without onboarding barriers:
 1. **Zero-Friction Guest Mode**: On launch, anonymous authentication connects seamlessly with Supabase or falls back to local storage—no email or sign-up form required.
