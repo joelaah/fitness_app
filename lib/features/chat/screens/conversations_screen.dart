@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
@@ -28,6 +29,17 @@ class ConversationsScreen extends StatefulWidget {
 class _ConversationsScreenState extends State<ConversationsScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  ChatConversation? _selectedConversation;
+
+  bool _isTemplateCoach(ChatConversation item) {
+    final name = item.trainerName ?? 'Coach';
+    return item.trainerId.startsWith('trainer-') ||
+        item.trainerId.startsWith('mock-') ||
+        (item.trainerUserId ?? '').startsWith('user-coach-') ||
+        name == 'Bob Trainer' ||
+        name == 'Charlie Yoga' ||
+        name == 'Diana Vance';
+  }
 
   @override
   void initState() {
@@ -84,6 +96,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = AppBreakpoints.isDesktop(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -133,7 +147,96 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           ],
         ),
       ),
-      body: Column(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppBreakpoints.chatSplitMaxWidth,
+          ),
+          child: isDesktop
+              ? Row(
+                  children: [
+                    SizedBox(
+                      width: 360,
+                      child: _buildRosterPane(context, isDesktop: true),
+                    ),
+                    const VerticalDivider(width: 1, color: AppColors.border),
+                    Expanded(
+                      child: _selectedConversation != null
+                          ? ChatScreen(
+                              key: ValueKey(_selectedConversation!.id),
+                              conversationId: _selectedConversation!.id,
+                              trainerId: _selectedConversation!.trainerId,
+                              trainerUserId:
+                                  _selectedConversation!.trainerUserId,
+                              trainerName:
+                                  _selectedConversation!.trainerName ?? 'Coach',
+                              initialConversation: _selectedConversation,
+                              chatBloc: widget.chatBloc,
+                              isTemplateCoach:
+                                  _isTemplateCoach(_selectedConversation!),
+                              isEmbeddedSplitView: true,
+                            )
+                          : _buildEmptyChatPlaceholder(context),
+                    ),
+                  ],
+                )
+              : _buildRosterPane(context, isDesktop: false),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyChatPlaceholder(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(25),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary.withAlpha(80)),
+              ),
+              child: const Icon(
+                Icons.lock_outline_rounded,
+                size: 48,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'PulseFit AI Encrypted Chat',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Text(
+                'Select a coach conversation from the list to begin messaging. '
+                'All communications are secured with zero-knowledge Signal-style X25519 cryptography.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRosterPane(BuildContext context, {required bool isDesktop}) {
+    return Column(
         children: [
           // Search Bar
           Padding(
@@ -270,26 +373,44 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         item.updatedAt,
                       );
 
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
+                      final isSelected =
+                          isDesktop && _selectedConversation?.id == item.id;
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary.withAlpha(20)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            ChatBloc? bloc = widget.chatBloc;
-                            if (bloc == null || bloc.isClosed) {
-                              try {
-                                bloc = context.read<ChatBloc>();
-                              } catch (_) {}
-                            }
+                          border: isSelected
+                              ? Border.all(
+                                  color: AppColors.primary.withAlpha(90),
+                                )
+                              : null,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              if (isDesktop) {
+                                setState(() {
+                                  _selectedConversation = item;
+                                });
+                                return;
+                              }
 
-                            final isTemplate = item.trainerId.startsWith('trainer-') ||
-                                item.trainerId.startsWith('mock-') ||
-                                (item.trainerUserId ?? '').startsWith('user-coach-') ||
-                                name == 'Bob Trainer' ||
-                                name == 'Charlie Yoga' ||
-                                name == 'Diana Vance';
+                              ChatBloc? bloc = widget.chatBloc;
+                              if (bloc == null || bloc.isClosed) {
+                                try {
+                                  bloc = context.read<ChatBloc>();
+                                } catch (_) {}
+                              }
 
-                            Navigator.push(
+                              final isTemplate =
+                                  _isTemplateCoach(item);
+
+                              Navigator.push(
                               context,
                               MaterialPageRoute<dynamic>(
                                 builder: (context) => ChatScreen(
@@ -447,7 +568,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                             ),
                           ),
                         ),
-                      );
+                      ),
+                    );
                     },
                   ),
                 );
@@ -455,7 +577,6 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 }

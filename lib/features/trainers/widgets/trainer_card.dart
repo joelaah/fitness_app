@@ -1,6 +1,7 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
+import 'package:fitness_app/core/widgets/perspective_tilt_card.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
 import 'package:fitness_app/features/trainers/screens/trainer_detail_screen.dart';
 import 'package:fitness_app/features/trainers/widgets/specialty_chip.dart';
@@ -51,10 +52,8 @@ class TrainerCard extends StatelessWidget {
     final rating = trainer.rating;
     final verified = trainer.verified;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: ElevatedCard(
-        onTap: onTap ??
+    final card = ElevatedCard(
+      onTap: onTap ??
             () {
               Navigator.push(
                 context,
@@ -144,10 +143,14 @@ class TrainerCard extends StatelessWidget {
                             style: TextStyle(color: AppColors.textSecondary),
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            'Verified Coach',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                          Flexible(
+                            child: Text(
+                              'Verified Coach',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
                         ],
@@ -239,6 +242,14 @@ class TrainerCard extends StatelessWidget {
             ),
           ],
         ),
+      );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: PerspectiveTiltCard(
+        borderRadius: 20,
+        elevation: 2.0,
+        child: card,
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
+import 'package:fitness_app/core/theme/pulsefit_page_transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -159,6 +160,15 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           fontSize: 12,
         ),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.windows: PulseFitPageTransitionsBuilder(),
+          TargetPlatform.macOS: PulseFitPageTransitionsBuilder(),
+          TargetPlatform.linux: PulseFitPageTransitionsBuilder(),
+          TargetPlatform.android: PulseFitPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
       ),
       useMaterial3: true,
     );

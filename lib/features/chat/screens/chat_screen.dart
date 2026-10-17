@@ -24,6 +24,7 @@ class ChatScreen extends StatefulWidget {
     this.initialConversation,
     this.chatBloc,
     this.isTemplateCoach,
+    this.isEmbeddedSplitView = false,
   });
 
   final String conversationId;
@@ -34,6 +35,7 @@ class ChatScreen extends StatefulWidget {
   final ChatConversation? initialConversation;
   final ChatBloc? chatBloc;
   final bool? isTemplateCoach;
+  final bool isEmbeddedSplitView;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -240,18 +242,21 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.textPrimary,
-          ),
-          onPressed: () {
-            // Strictly adhering to flutter-navigation-rules: clean pop
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
+        automaticallyImplyLeading: !widget.isEmbeddedSplitView,
+        leading: widget.isEmbeddedSplitView
+            ? null
+            : IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.textPrimary,
+                ),
+                onPressed: () {
+                  // Strictly adhering to flutter-navigation-rules: clean pop
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
         titleSpacing: 0,
         title: Row(
           children: [

@@ -3,11 +3,15 @@ import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/core/widgets/secondary_button.dart';
+import 'package:fitness_app/features/auth/services/auth_service.dart';
 import 'package:fitness_app/features/payments/screens/payment_history_screen.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
 import 'package:fitness_app/features/trainers/screens/trainer_detail_screen.dart';
+import 'package:fitness_app/features/trainers/screens/trainer_discovery_screen.dart';
 import 'package:fitness_app/features/trainers/screens/trainer_registration_screen.dart';
+import 'package:fitness_app/features/trainers/services/certification_picker_service.dart';
 import 'package:fitness_app/features/trainers/services/trainer_service.dart';
+import 'package:fitness_app/features/trainers/services/trainer_storage_service.dart';
 import 'package:flutter/material.dart';
 
 /// Trainer Dashboard Screen:
@@ -18,10 +22,16 @@ class TrainerDashboardScreen extends StatefulWidget {
     super.key,
     this.trainerProfile,
     this.trainerService,
+    this.authService,
+    this.storageService,
+    this.pickerService,
   });
 
   final TrainerProfile? trainerProfile;
   final TrainerService? trainerService;
+  final AuthService? authService;
+  final TrainerStorageService? storageService;
+  final CertificationPickerService? pickerService;
 
   @override
   State<TrainerDashboardScreen> createState() => _TrainerDashboardScreenState();
@@ -30,6 +40,9 @@ class TrainerDashboardScreen extends StatefulWidget {
 class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   TrainerProfile? _profile;
   late final TrainerService _trainerService;
+  late final AuthService _authService;
+  late final TrainerStorageService _storageService;
+  late final CertificationPickerService _pickerService;
   bool _acceptingClients = true;
   bool _isLoading = false;
 
@@ -37,7 +50,11 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   void initState() {
     super.initState();
     _trainerService = widget.trainerService ?? TrainerService();
-    if (widget.trainerProfile != null) {
+    _authService = widget.authService ?? AuthService();
+    _storageService = widget.storageService ?? TrainerStorageService();
+    _pickerService = widget.pickerService ?? const CertificationPickerService();
+
+    if (widget.trainerProfile != null && !_authService.isAnonymous) {
       _profile = widget.trainerProfile;
     } else {
       _loadDashboardProfile();
@@ -47,34 +64,15 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
   Future<void> _loadDashboardProfile() async {
     setState(() => _isLoading = true);
     try {
-      final myProfile = await _trainerService.getMyTrainerProfile();
-      if (myProfile != null) {
-        _profile = myProfile;
+      if (_authService.isAnonymous) {
+        _profile = null;
       } else {
-        _profile = const TrainerProfile(
-          id: 'my-trainer-id',
-          userId: 'my-user-id',
-          displayName: 'Coach Devon Hayes',
-          bio: 'Hypertrophy coach specializing in sports nutrition.',
-          certifications: <String>['NASM-CPT', 'CISSN'],
-          specialties: <String>['Hypertrophy', 'Nutrition'],
-          experienceYears: 6,
-          hourlyRate: 2500,
-          rating: 4.90,
-        );
+        final myProfile = await _trainerService.getMyTrainerProfile();
+        _profile = myProfile;
       }
-    } on Exception catch (_) {
-      _profile = const TrainerProfile(
-        id: 'my-trainer-id',
-        userId: 'my-user-id',
-        displayName: 'Coach Devon Hayes',
-        bio: 'Hypertrophy coach specializing in sports nutrition.',
-        certifications: <String>['NASM-CPT', 'CISSN'],
-        specialties: <String>['Hypertrophy', 'Nutrition'],
-        experienceYears: 6,
-        hourlyRate: 2500,
-        rating: 4.90,
-      );
+    } catch (e) {
+      debugPrint('TrainerDashboardScreen error loading profile: $e');
+      _profile = null;
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -82,11 +80,126 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     }
   }
 
+  void _returnToCoaches(BuildContext context) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (context) => TrainerDiscoveryScreen(
+            trainerService: _trainerService,
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildAccessRestrictedView(BuildContext context, ThemeData theme) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Trainer Dashboard'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Return to Coaches',
+          onPressed: () => _returnToCoaches(context),
+        ),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xl,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.lock_person_rounded,
+                    size: 40,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Access Restricted: Coaches Only',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'The Trainer Dashboard contains private coach analytics, session '
+                  'rate configurations, net payout telemetry, and client rosters. '
+                  'This space is exclusively accessible to verified, registered coaches.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Are you a certified fitness professional? Register your coaching '
+                  'credentials to showcase your expertise and start taking clients.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                PrimaryButton(
+                  label: 'Register as a Coach',
+                  icon: Icons.person_add_rounded,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<dynamic>(
+                        builder: (context) => TrainerRegistrationScreen(
+                          trainerService: _trainerService,
+                          authService: _authService,
+                          storageService: _storageService,
+                          pickerService: _pickerService,
+                        ),
+                      ),
+                    ).then((_) => _loadDashboardProfile());
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                SecondaryButton(
+                  label: 'Return to Coaches',
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () => _returnToCoaches(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (_isLoading || _profile == null) {
+    if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Trainer Dashboard')),
         body: const Center(
@@ -95,6 +208,10 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
           ),
         ),
       );
+    }
+
+    if (_profile == null) {
+      return _buildAccessRestrictedView(context, theme);
     }
 
     final profile = _profile!;
@@ -117,6 +234,9 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
                   builder: (context) => TrainerRegistrationScreen(
                     existingProfile: profile,
                     trainerService: _trainerService,
+                    authService: _authService,
+                    storageService: _storageService,
+                    pickerService: _pickerService,
                   ),
                 ),
               ).then((_) => _loadDashboardProfile());

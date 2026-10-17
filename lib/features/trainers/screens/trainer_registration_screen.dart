@@ -61,6 +61,7 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
       <CertificationAttachment>[];
   String? _certInputError;
   bool _isLoading = false;
+  bool _isPickingFile = false;
   late final String _sessionFallbackUid;
 
   String get _effectiveUserId {
@@ -189,92 +190,117 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
   }
 
   Future<void> _pickAndAttachCertificate() async {
-    final attachment = await _pickerService.pickCertification();
-    if (attachment == null) return;
+    if (_isPickingFile) return;
+    _isPickingFile = true;
+    try {
+      final attachment = await _pickerService.pickCertification();
+      if (attachment == null) return;
 
-    final existingIdx = _attachments.indexWhere(
-      (a) => a.name.toLowerCase() == attachment.name.toLowerCase(),
-    );
-    if (existingIdx >= 0) {
-      final existing = _attachments[existingIdx];
-      if (existing.error == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('"${attachment.name}" is already attached.'),
-              backgroundColor: AppColors.warning,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-        return;
-      } else {
-        setState(() {
-          _attachments.removeAt(existingIdx);
-        });
-      }
-    }
-
-    final pendingAttachment = attachment.copyWith(isUploading: true);
-    setState(() {
-      _attachments.add(pendingAttachment);
-    });
-
-    final currentUid = _effectiveUserId;
-
-    if (attachment.bytes != null && attachment.bytes!.isNotEmpty) {
-      try {
-        final mime = attachment.isPdf
-            ? 'application/pdf'
-            : (attachment.isImage
-                ? (attachment.extension == 'png'
-                    ? 'image/png'
-                    : (attachment.extension == 'webp'
-                        ? 'image/webp'
-                        : 'image/jpeg'))
-                : null);
-
-        final storageUrl = await _storageService.uploadCertification(
-          userId: currentUid,
-          fileName: attachment.name,
-          bytes: attachment.bytes!,
-          mimeType: mime,
-        );
-
-        if (mounted) {
-          final idx = _attachments.indexWhere((a) => a.id == attachment.id);
-          if (idx >= 0) {
-            setState(() {
-              _attachments[idx] = _attachments[idx].copyWith(
-                storageUrl: storageUrl,
-                isUploading: false,
-                error: null,
-              );
-            });
-
+      final existingIdx = _attachments.indexWhere(
+        (a) => a.name.toLowerCase() == attachment.name.toLowerCase(),
+      );
+      if (existingIdx >= 0) {
+        final existing = _attachments[existingIdx];
+        if (existing.error == null) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Attached "${attachment.name}" successfully!'),
-                backgroundColor: AppColors.success,
+                content: Text('"${attachment.name}" is already attached.'),
+                backgroundColor: AppColors.warning,
                 duration: const Duration(seconds: 2),
               ),
             );
           }
+          return;
+        } else {
+          setState(() {
+            _attachments.removeAt(existingIdx);
+          });
         }
-      } catch (e) {
+      }
+
+      final pendingAttachment = attachment.copyWith(isUploading: true);
+      setState(() {
+        _attachments.add(pendingAttachment);
+      });
+
+      final currentUid = _effectiveUserId;
+
+      if (attachment.bytes != null && attachment.bytes!.isNotEmpty) {
+        try {
+          final mime = attachment.isPdf
+              ? 'application/pdf'
+              : (attachment.isImage
+                  ? (attachment.extension == 'png'
+                      ? 'image/png'
+                      : (attachment.extension == 'webp'
+                          ? 'image/webp'
+                          : 'image/jpeg'))
+                  : null);
+
+          final storageUrl = await _storageService.uploadCertification(
+            userId: currentUid,
+            fileName: attachment.name,
+            bytes: attachment.bytes!,
+            mimeType: mime,
+          );
+
+          if (mounted) {
+            final idx = _attachments.indexWhere((a) => a.id == attachment.id);
+            if (idx >= 0) {
+              setState(() {
+                _attachments[idx] = _attachments[idx].copyWith(
+                  storageUrl: storageUrl,
+                  isUploading: false,
+                  error: null,
+                );
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Attached "${attachment.name}" successfully!'),
+                  backgroundColor: AppColors.success,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (mounted) {
+            final idx = _attachments.indexWhere((a) => a.id == attachment.id);
+            if (idx >= 0) {
+              setState(() {
+                _attachments[idx] = _attachments[idx].copyWith(
+                  isUploading: false,
+                  error: 'Upload failed: $e',
+                );
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to upload "${attachment.name}": $e'),
+                  backgroundColor: AppColors.error,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+          }
+        }
+      } else {
         if (mounted) {
           final idx = _attachments.indexWhere((a) => a.id == attachment.id);
           if (idx >= 0) {
             setState(() {
               _attachments[idx] = _attachments[idx].copyWith(
                 isUploading: false,
-                error: 'Upload failed: $e',
+                error: 'File content is empty or unreadable.',
               );
             });
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Failed to upload "${attachment.name}": $e'),
+                content:
+                    Text('Unable to read content from "${attachment.name}".'),
                 backgroundColor: AppColors.error,
                 duration: const Duration(seconds: 3),
               ),
@@ -282,26 +308,8 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
           }
         }
       }
-    } else {
-      if (mounted) {
-        final idx = _attachments.indexWhere((a) => a.id == attachment.id);
-        if (idx >= 0) {
-          setState(() {
-            _attachments[idx] = _attachments[idx].copyWith(
-              isUploading: false,
-              error: 'File content is empty or unreadable.',
-            );
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Unable to read content from "${attachment.name}".'),
-              backgroundColor: AppColors.error,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      }
+    } finally {
+      _isPickingFile = false;
     }
   }
 

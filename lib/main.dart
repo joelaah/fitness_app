@@ -18,33 +18,35 @@ void main() async {
   // Ensure widget binding is initialized before calling async plugins
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase if credentials are provided
-  if (SupabaseConfig.isConfigured) {
-    try {
-      await Supabase.initialize(
-        url: SupabaseConfig.supabaseUrl,
-        // ignore: deprecated_member_use -- anonKey backwards compatibility
-        anonKey: SupabaseConfig.supabaseAnonKey,
-      );
-      SupabaseConfig.isInitialized = true;
+  // 1. Parallelize SharedPreferences and Supabase initialization
+  final prefsFuture = SharedPreferences.getInstance();
+  final supabaseFuture = SupabaseConfig.isConfigured
+      ? Supabase.initialize(
+          url: SupabaseConfig.supabaseUrl,
+          // ignore: deprecated_member_use -- anonKey backwards compatibility
+          anonKey: SupabaseConfig.supabaseAnonKey,
+        ).then<Supabase?>((supabase) {
+          SupabaseConfig.isInitialized = true;
+          // Non-blocking background session check / anonymous sign-in
+          // Requires: Supabase Dashboard → Authentication → Providers → Anonymous → Enable
+          if (supabase.client.auth.currentUser == null) {
+            supabase.client.auth.signInAnonymously().then((_) {
+              debugPrint('Anonymous user session established: '
+                  '${supabase.client.auth.currentUser?.id}');
+            }).catchError((Object e) {
+              debugPrint('Background anonymous auth notice: $e');
+            });
+          }
+          return supabase;
+        }).catchError((Object e) {
+          debugPrint('Supabase initialization notice: $e');
+          return null;
+        })
+      : Future<Supabase?>.value(null);
 
-      // Auto-create anonymous user if not signed in.
-      // This gives each device its own Supabase user ID for cloud sync
-      // and per-user AI recommendations without requiring email sign-up.
-      // Requires: Supabase Dashboard → Authentication → Providers
-      // → Anonymous → Enable
-      if (Supabase.instance.client.auth.currentUser == null) {
-        await Supabase.instance.client.auth.signInAnonymously();
-        debugPrint('Anonymous user created: '
-            '${Supabase.instance.client.auth.currentUser?.id}');
-      }
-    } on Exception catch (e) {
-      debugPrint('Supabase initialization notice: $e');
-    }
-  }
+  final results = await Future.wait([prefsFuture, supabaseFuture]);
+  final prefs = results[0] as SharedPreferences;
 
-  // Initialize SharedPreferences asynchronously before runApp
-  final prefs = await SharedPreferences.getInstance();
   final routineRepository = SharedPrefsRoutineRepository(prefs);
   final historyRepository = WorkoutHistoryRepository(prefs);
 

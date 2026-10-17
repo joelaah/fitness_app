@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
@@ -101,6 +102,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
     final theme = Theme.of(context);
     final provider = context.watch<WorkoutProvider>();
     final hasHistory = provider.historyRepository.getAll().isNotEmpty;
+    final isDesktop = AppBreakpoints.isDesktop(context);
 
     return BlocConsumer<AiCoachBloc, AiCoachState>(
       listener: (context, state) {
@@ -117,56 +119,112 @@ class _AiCoachViewState extends State<_AiCoachView> {
         }
       },
       builder: (context, state) {
-        return DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Row(
-                mainAxisSize: MainAxisSize.min,
+        if (!isDesktop) {
+          return DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                    SizedBox(width: 8),
+                    Text('AI Coach'),
+                  ],
+                ),
+                bottom: const TabBar(
+                  indicatorColor: AppColors.primary,
+                  tabs: [
+                    Tab(
+                      icon: Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                      text: 'AI Chat',
+                    ),
+                    Tab(
+                      icon: Icon(Icons.insights_rounded, size: 18),
+                      text: 'Plan & Insights',
+                    ),
+                  ],
+                ),
+                actions: [
+                  if (!state.isLoading)
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded),
+                      tooltip: 'Refresh Insights',
+                      onPressed: () {
+                        final sessions = context
+                            .read<WorkoutProvider>()
+                            .historyRepository
+                            .getAll();
+                        context.read<AiCoachBloc>().add(
+                              AiCoachRecommendationsRequested(
+                                forceRefresh: true,
+                                sessions: sessions,
+                              ),
+                            );
+                      },
+                    ),
+                ],
+              ),
+              body: TabBarView(
                 children: [
-                  Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-                  SizedBox(width: 8),
-                  Text('AI Coach'),
+                  _buildChatTab(context, theme),
+                  _buildInsightsTab(context, theme, hasHistory),
                 ],
               ),
-              bottom: const TabBar(
-                indicatorColor: AppColors.primary,
-                tabs: [
-                  Tab(
-                    icon: Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                    text: 'AI Chat',
-                  ),
-                  Tab(
-                    icon: Icon(Icons.insights_rounded, size: 18),
-                    text: 'Plan & Insights',
-                  ),
-                ],
-              ),
-              actions: [
-                if (!state.isLoading)
-                  IconButton(
-                    icon: const Icon(Icons.refresh_rounded),
-                    tooltip: 'Refresh Insights',
-                    onPressed: () {
-                      final sessions = context
-                          .read<WorkoutProvider>()
-                          .historyRepository
-                          .getAll();
-                      context.read<AiCoachBloc>().add(
-                            AiCoachRecommendationsRequested(
-                              forceRefresh: true,
-                              sessions: sessions,
-                            ),
-                          );
-                    },
-                  ),
+            ),
+          );
+        }
+
+        // Desktop Dual-Column Split-View
+        return Scaffold(
+          appBar: AppBar(
+            title: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                SizedBox(width: 8),
+                Text('AI Coach & RAG Insights'),
               ],
             ),
-            body: TabBarView(
-              children: [
-                _buildChatTab(context, theme),
-                _buildInsightsTab(context, theme, hasHistory),
-              ],
+            actions: [
+              if (!state.isLoading)
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  tooltip: 'Refresh Insights',
+                  onPressed: () {
+                    final sessions = context
+                        .read<WorkoutProvider>()
+                        .historyRepository
+                        .getAll();
+                    context.read<AiCoachBloc>().add(
+                          AiCoachRecommendationsRequested(
+                            forceRefresh: true,
+                            sessions: sessions,
+                          ),
+                        );
+                  },
+                ),
+            ],
+          ),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppBreakpoints.splitViewMaxWidth,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: _buildChatTab(context, theme),
+                  ),
+                  const VerticalDivider(width: 1, color: AppColors.border),
+                  Expanded(
+                    flex: 6,
+                    child: _buildInsightsTab(context, theme, hasHistory),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -244,7 +302,8 @@ class _AiCoachViewState extends State<_AiCoachView> {
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.82,
+                        maxWidth: (MediaQuery.of(context).size.width * 0.82)
+                            .clamp(0.0, 520.0),
                       ),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -457,7 +516,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
                 'Complete your first workout so the AI Coach can analyze your volume, fatigue, and progression.',
             buttonText: 'Go to AI Chat',
             onButtonPressed: () {
-              DefaultTabController.of(context).animateTo(0);
+              DefaultTabController.maybeOf(context)?.animateTo(0);
             },
           ),
         ),

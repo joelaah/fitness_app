@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/category_chip.dart';
@@ -124,9 +125,18 @@ class _TrainerDiscoveryScreenState extends State<TrainerDiscoveryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final width = MediaQuery.sizeOf(context).width;
+    final isDesktop = width >= AppBreakpoints.desktopMin;
+    final isWide = width >= AppBreakpoints.wideDesktopMin;
+    final crossAxisCount = isWide ? 3 : (isDesktop ? 2 : 1);
 
     return Scaffold(
-      body: NestedScrollView(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppBreakpoints.marketplaceMaxWidth,
+          ),
+          child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
@@ -436,14 +446,32 @@ class _TrainerDiscoveryScreenState extends State<TrainerDiscoveryScreen> {
                 SliverPadding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return TrainerCard(trainer: _filteredTrainers[index]);
-                      },
-                      childCount: _filteredTrainers.length,
-                    ),
-                  ),
+                  sliver: crossAxisCount == 1
+                      ? SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              return TrainerCard(
+                                  trainer: _filteredTrainers[index]);
+                            },
+                            childCount: _filteredTrainers.length,
+                          ),
+                        )
+                      : SliverGrid(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            mainAxisExtent: 220,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              return TrainerCard(
+                                  trainer: _filteredTrainers[index]);
+                            },
+                            childCount: _filteredTrainers.length,
+                          ),
+                        ),
                 ),
               const SliverToBoxAdapter(
                 child: SizedBox(height: 32),
@@ -452,6 +480,8 @@ class _TrainerDiscoveryScreenState extends State<TrainerDiscoveryScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
