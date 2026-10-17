@@ -229,7 +229,8 @@ flutter build web --release --base-href /fitness_app/
 ```
 
 ---
-
+## 📜 Acknowledgments & Data Sources
+- **Exercise Database:** Exercise movements and instructional data are sourced from the open-source [`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset) under the MIT License.
 ## 👨‍💻 Author
 
 **Joel Lalruatkima**  
