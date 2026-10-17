@@ -12,13 +12,14 @@ typedef FilePickerHandler = Future<FilePickerResult?> Function({
 /// Service responsible for picking certification documents and images
 /// (PDF, PNG, JPG, JPEG) on both Web and Mobile platforms.
 class CertificationPickerService {
-  const CertificationPickerService({
+  CertificationPickerService({
     this.allowedExtensions = defaultAllowedExtensions,
     this.pickFilesHandler,
   });
 
   final List<String> allowedExtensions;
   final FilePickerHandler? pickFilesHandler;
+  Object? lastError;
 
   static const List<String> defaultAllowedExtensions = <String>[
     'pdf',
@@ -54,7 +55,11 @@ class CertificationPickerService {
   }
 
   Future<CertificationAttachment?> pickCertification() async {
+    lastError = null;
     try {
+      if (kIsWeb) {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      }
       final sanitized = sanitizeExtensions(allowedExtensions);
       final result = await (pickFilesHandler != null
           ? pickFilesHandler!(
@@ -157,6 +162,7 @@ class CertificationPickerService {
         extension: ext,
       );
     } catch (e) {
+      lastError = e;
       debugPrint('CertificationPickerService error: $e');
       return null;
     }

@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/utils/web_splash_util.dart';
 import 'package:fitness_app/core/widgets/adaptive_navigation_rail.dart';
+import 'package:fitness_app/features/auth/screens/login_screen.dart';
+import 'package:fitness_app/features/auth/services/auth_service.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
 import 'package:fitness_app/features/chat/screens/conversations_screen.dart';
 import 'package:fitness_app/features/exercises/screens/exercise_library_screen.dart';
@@ -14,6 +18,7 @@ import 'package:fitness_app/features/workout/screens/history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// PulseFit AI Main Screen Shell
 ///
@@ -44,10 +49,12 @@ class MainScreen extends StatefulWidget {
   const MainScreen({
     super.key,
     this.initialIndex = 0,
+    this.authService,
   });
 
   /// Allows programmatic or deep-link tab selection (default: 0)
   final int initialIndex;
+  final AuthService? authService;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -57,6 +64,8 @@ class _MainScreenState extends State<MainScreen> {
   late int _selectedIndex;
   bool _isRailExtended = true;
   final GlobalKey _stackKey = GlobalKey(debugLabel: 'main_screen_stack');
+  late final AuthService _authService;
+  StreamSubscription<AuthState>? _authSubscription;
 
   late final List<Widget> _screens = [
     HomeScreen(
@@ -81,10 +90,177 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _authService = widget.authService ?? AuthService();
     _selectedIndex = widget.initialIndex.clamp(0, 5);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       dismissWebSplash();
     });
+
+    _authSubscription = _authService.onAuthStateChange?.listen((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _navigateToLogin(BuildContext context) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute<bool>(
+        builder: (_) => LoginScreen(authService: _authService),
+      ),
+    );
+    if (result == true && mounted) {
+      setState(() {});
+    }
+  }
+
+  Widget _buildAuthHeaderAction(BuildContext context, bool isNarrow) {
+    if (_authService.isAnonymous) {
+      if (isNarrow) {
+        return IconButton(
+          key: const Key('header_sign_in_button'),
+          icon: const Icon(
+            Icons.person_outline_rounded,
+            color: AppColors.primary,
+            size: 22,
+          ),
+          tooltip: 'Sign In',
+          onPressed: () => _navigateToLogin(context),
+        );
+      }
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: TextButton.icon(
+          key: const Key('header_sign_in_button'),
+          onPressed: () => _navigateToLogin(context),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: AppColors.primary.withAlpha(80)),
+            ),
+            backgroundColor: AppColors.primary.withAlpha(20),
+          ),
+          icon: const Icon(Icons.person_outline_rounded, size: 18),
+          label: Text(
+            'Sign In',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return PopupMenuButton<String>(
+      key: const Key('header_profile_avatar'),
+      tooltip: 'Profile Options',
+      icon: CircleAvatar(
+        radius: 14,
+        backgroundColor: AppColors.primary.withAlpha(30),
+        child: const Icon(Icons.person_rounded, size: 18, color: AppColors.primary),
+      ),
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      onSelected: (value) async {
+        if (value == 'profile') {
+          showDialog<void>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.border),
+              ),
+              title: Text(
+                'User Profile',
+                style: GoogleFonts.poppins(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Email: ${_authService.currentUser?.email ?? "Verified Athlete"}',
+                    style: GoogleFonts.inter(color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'User ID: ${_authService.currentUserId ?? "Unknown"}',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(
+                    'Close',
+                    style: GoogleFonts.inter(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else if (value == 'sign_out') {
+          await _authService.signOut();
+          if (mounted) setState(() {});
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: 'profile',
+          child: Row(
+            children: [
+              const Icon(
+                Icons.account_circle_outlined,
+                size: 18,
+                color: AppColors.textPrimary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Profile',
+                style: GoogleFonts.inter(color: AppColors.textPrimary),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'sign_out',
+          child: Row(
+            children: [
+              const Icon(
+                Icons.logout_rounded,
+                size: 18,
+                color: AppColors.error,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Sign Out',
+                style: GoogleFonts.inter(color: AppColors.error),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   void _navigateToChat(BuildContext context) {
@@ -186,6 +362,7 @@ class _MainScreenState extends State<MainScreen> {
           tooltip: 'Payment History',
           onPressed: () => _navigateToPayments(context),
         ),
+        _buildAuthHeaderAction(context, isNarrow),
         SizedBox(width: isNarrow ? 4 : 8),
       ],
     );

@@ -92,7 +92,7 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
     _trainerService = widget.trainerService ?? TrainerService();
     _authService = widget.authService ?? AuthService();
     _storageService = widget.storageService ?? TrainerStorageService();
-    _pickerService = widget.pickerService ?? const CertificationPickerService();
+    _pickerService = widget.pickerService ?? CertificationPickerService();
 
     final profile = widget.existingProfile;
     final initialName = profile?.displayName ?? '';
@@ -191,10 +191,23 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
 
   Future<void> _pickAndAttachCertificate() async {
     if (_isPickingFile) return;
-    _isPickingFile = true;
+    setState(() {
+      _isPickingFile = true;
+    });
     try {
       final attachment = await _pickerService.pickCertification();
-      if (attachment == null) return;
+      if (attachment == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to open file picker. Please try again.'),
+              backgroundColor: AppColors.error,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
 
       final existingIdx = _attachments.indexWhere(
         (a) => a.name.toLowerCase() == attachment.name.toLowerCase(),
@@ -308,8 +321,24 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
           }
         }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to open file picker. Please try again.'),
+            backgroundColor: AppColors.error,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
-      _isPickingFile = false;
+      if (mounted) {
+        setState(() {
+          _isPickingFile = false;
+        });
+      } else {
+        _isPickingFile = false;
+      }
     }
   }
 
@@ -818,7 +847,7 @@ class _TrainerRegistrationScreenState extends State<TrainerRegistrationScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: _pickAndAttachCertificate,
+                onPressed: _isPickingFile ? null : _pickAndAttachCertificate,
               ),
 
               const SizedBox(height: AppSpacing.xl),

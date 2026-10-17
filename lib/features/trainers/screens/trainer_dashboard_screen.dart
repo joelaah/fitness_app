@@ -52,7 +52,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     _trainerService = widget.trainerService ?? TrainerService();
     _authService = widget.authService ?? AuthService();
     _storageService = widget.storageService ?? TrainerStorageService();
-    _pickerService = widget.pickerService ?? const CertificationPickerService();
+    _pickerService = widget.pickerService ?? CertificationPickerService();
 
     if (widget.trainerProfile != null && !_authService.isAnonymous) {
       _profile = widget.trainerProfile;

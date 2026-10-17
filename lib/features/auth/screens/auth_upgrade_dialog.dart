@@ -563,6 +563,7 @@ class _AuthUpgradeDialogState extends State<AuthUpgradeDialog> {
                   TextFormField(
                     controller: _nameController,
                     enabled: !isBusy,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     textInputAction: TextInputAction.next,
                     style: GoogleFonts.inter(
                       color: AppColors.textPrimary,
@@ -608,6 +609,7 @@ class _AuthUpgradeDialogState extends State<AuthUpgradeDialog> {
                 TextFormField(
                   controller: _emailController,
                   enabled: !isBusy,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   style: GoogleFonts.inter(
@@ -660,6 +662,7 @@ class _AuthUpgradeDialogState extends State<AuthUpgradeDialog> {
                 TextFormField(
                   controller: _passwordController,
                   enabled: !isBusy,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => isBusy ? null : _handleSubmit(),

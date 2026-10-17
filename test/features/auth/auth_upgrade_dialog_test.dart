@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fitness_app/features/auth/screens/auth_upgrade_dialog.dart';
 import 'package:fitness_app/features/auth/services/auth_service.dart';
+import 'package:fitness_app/features/auth/widgets/guest_expiration_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -486,6 +487,156 @@ void main() {
       expect(submittedEmail, 'jordan@pulsefit.ai');
       expect(submittedPassword, 'powerlifting99');
       expect(find.byType(AuthUpgradeDialog), findsNothing);
+    });
+
+    testWidgets('autovalidate_email_clears_error_on_valid_input', (tester) async {
+      _setStandardViewport(tester);
+      await tester.pumpWidget(_buildTestableDialog());
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      // Submit with empty email to trigger error
+      final emailSubmitBtn = find.text('Continue with Email & Password');
+      await tester.ensureVisible(emailSubmitBtn);
+      await tester.tap(emailSubmitBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Please enter your email'), findsOneWidget);
+
+      final emailField = find.widgetWithText(TextFormField, 'coach@example.com');
+      await tester.ensureVisible(emailField);
+      await tester.enterText(emailField, 'bad-email');
+      await tester.pump();
+      expect(find.text('Enter a valid email'), findsOneWidget);
+
+      await tester.enterText(emailField, 'valid@pulsefit.ai');
+      await tester.pump();
+
+      // Error must immediately disappear on keystroke without re-submitting
+      expect(find.text('Please enter your email'), findsNothing);
+      expect(find.text('Enter a valid email'), findsNothing);
+    });
+
+    testWidgets('autovalidate_password_clears_error_on_valid_input', (tester) async {
+      _setStandardViewport(tester);
+      await tester.pumpWidget(_buildTestableDialog());
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      // Submit with empty password to trigger error
+      final emailSubmitBtn = find.text('Continue with Email & Password');
+      await tester.ensureVisible(emailSubmitBtn);
+      await tester.tap(emailSubmitBtn);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Please enter a password'), findsOneWidget);
+
+      final passwordField = find.widgetWithText(TextFormField, 'Minimum 6 characters');
+      await tester.ensureVisible(passwordField);
+      await tester.enterText(passwordField, '123');
+      await tester.pump();
+      expect(find.text('Password must be at least 6 characters'), findsOneWidget);
+
+      await tester.enterText(passwordField, 'correctpassword123');
+      await tester.pump();
+
+      // Error must immediately disappear on keystroke without re-submitting
+      expect(find.text('Please enter a password'), findsNothing);
+      expect(find.text('Password must be at least 6 characters'), findsNothing);
+    });
+
+    testWidgets('upgrade_anonymous_user_marks_non_anonymous', (tester) async {
+      _setStandardViewport(tester);
+      final authService = AuthService();
+      await authService.signInAnonymously();
+      expect(authService.isAnonymous, isTrue);
+
+      await tester.pumpWidget(_buildTestableDialog(authService: authService));
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      // Enter valid credentials
+      final nameField = find.widgetWithText(TextFormField, 'e.g. Alex Mercer');
+      await tester.ensureVisible(nameField);
+      await tester.enterText(nameField, 'Alex Mercer');
+
+      final emailField = find.widgetWithText(TextFormField, 'coach@example.com');
+      await tester.ensureVisible(emailField);
+      await tester.enterText(emailField, 'alex@pulsefit.ai');
+
+      final passwordField = find.widgetWithText(TextFormField, 'Minimum 6 characters');
+      await tester.ensureVisible(passwordField);
+      await tester.enterText(passwordField, 'supersecret123');
+
+      final emailSubmitBtn = find.text('Continue with Email & Password');
+      await tester.ensureVisible(emailSubmitBtn);
+      await tester.tap(emailSubmitBtn);
+      await tester.pumpAndSettle();
+
+      // Dialog should be dismissed
+      expect(find.byType(AuthUpgradeDialog), findsNothing);
+
+      // Bug 2 Assertion: isAnonymous is immediately false
+      expect(authService.isAnonymous, isFalse);
+      expect(authService.guestExpirationTime, isNull);
+      expect(authService.isGuestExpired, isFalse);
+    });
+
+    testWidgets('guest_expiration_banner_hidden_after_upgrade', (tester) async {
+      _setStandardViewport(tester);
+      final authService = AuthService();
+      await authService.signInAnonymously();
+      expect(authService.isAnonymous, isTrue);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GuestExpirationBanner(
+              authService: authService,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 1. Verify banner is initially rendered
+      expect(find.byKey(const Key('guest_expiration_banner')), findsOneWidget);
+      expect(find.text('Guest Session Expiring'), findsOneWidget);
+
+      // 2. Tap 'Save Account' to launch AuthUpgradeDialog
+      final saveAccountBtn = find.byKey(const Key('guest_expiration_banner_action'));
+      await tester.tap(saveAccountBtn);
+      await tester.pumpAndSettle();
+
+      // 3. Verify dialog opened
+      expect(find.byType(AuthUpgradeDialog), findsOneWidget);
+
+      // 4. Fill form fields
+      final nameField = find.widgetWithText(TextFormField, 'e.g. Alex Mercer');
+      await tester.ensureVisible(nameField);
+      await tester.enterText(nameField, 'Taylor Runner');
+
+      final emailField = find.widgetWithText(TextFormField, 'coach@example.com');
+      await tester.ensureVisible(emailField);
+      await tester.enterText(emailField, 'taylor@pulsefit.ai');
+
+      final passwordField = find.widgetWithText(TextFormField, 'Minimum 6 characters');
+      await tester.ensureVisible(passwordField);
+      await tester.enterText(passwordField, 'mypassword123');
+
+      // 5. Submit form
+      final emailSubmitBtn = find.text('Continue with Email & Password');
+      await tester.ensureVisible(emailSubmitBtn);
+      await tester.tap(emailSubmitBtn);
+      await tester.pumpAndSettle();
+
+      // 6. Dialog popped
+      expect(find.byType(AuthUpgradeDialog), findsNothing);
+
+      // 7. Verify banner is now completely hidden from widget tree
+      expect(find.byKey(const Key('guest_expiration_banner')), findsNothing);
+      expect(find.text('Guest Session Expiring'), findsNothing);
+      expect(authService.isAnonymous, isFalse);
     });
   });
 }

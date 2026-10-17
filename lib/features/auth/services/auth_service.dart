@@ -7,16 +7,30 @@ class AuthService {
     SupabaseClient? client,
     User? initialUser,
     DateTime? guestSessionStartTime,
+    Stream<AuthState>? authStateStream,
   })  : _client = client,
         _mockUser = initialUser,
+        _mockAuthStateStream = authStateStream,
         _guestSessionStartTime = guestSessionStartTime ??
             (initialUser != null
                 ? DateTime.tryParse(initialUser.createdAt)
                 : null);
 
   final SupabaseClient? _client;
+  final Stream<AuthState>? _mockAuthStateStream;
   User? _mockUser;
   DateTime? _guestSessionStartTime;
+  bool _upgradeRequested = false;
+
+  /// Web redirect URL for OAuth authentication callback loops
+  static const String _webRedirectUrl = String.fromEnvironment(
+    'OAUTH_REDIRECT_URL',
+    defaultValue: 'http://localhost:8080',
+  );
+
+  /// Reactive stream of Supabase auth state changes
+  Stream<AuthState>? get onAuthStateChange =>
+      _mockAuthStateStream ?? _supabase?.auth.onAuthStateChange;
 
   /// 2-hour TTL window for unlinked anonymous guest data
   static const Duration guestDataTtl = Duration(hours: 2);
@@ -37,6 +51,7 @@ class AuthService {
 
   /// Whether current session is an anonymous guest
   bool get isAnonymous {
+    if (_upgradeRequested) return false;
     final user = currentUser;
     if (user == null) return true;
     return user.isAnonymous;
@@ -85,6 +100,7 @@ class AuthService {
   /// Initializes an anonymous guest session using Supabase anon credentials.
   /// Automatically tags user metadata with the 2-hour TTL window.
   Future<AuthResponse> signInAnonymously({Map<String, dynamic>? data}) async {
+    _upgradeRequested = false;
     final client = _supabase;
     final nowUtc = DateTime.now().toUtc();
     final ttlData = <String, dynamic>{
@@ -136,6 +152,8 @@ class AuthService {
     String? redirectTo,
   }) async {
     final client = _supabase;
+    final effectiveRedirect = redirectTo ?? (kIsWeb ? _webRedirectUrl : null);
+
     if (client == null) {
       debugPrint('AuthService: Mock OAuth upgrade for ${provider.name}');
       final preservedId = currentUserId ?? 'mock-oauth-user';
@@ -153,6 +171,7 @@ class AuthService {
         isAnonymous: false,
       );
       _guestSessionStartTime = null;
+      _upgradeRequested = true;
       return true;
     }
 
@@ -161,10 +180,11 @@ class AuthService {
       try {
         final linked = await client.auth.linkIdentity(
           provider,
-          redirectTo: redirectTo,
+          redirectTo: effectiveRedirect,
         );
         if (linked) {
           _guestSessionStartTime = null;
+          _upgradeRequested = true;
           final userId = client.auth.currentUser?.id;
           if (userId != null) {
             try {
@@ -188,10 +208,11 @@ class AuthService {
 
     final success = await client.auth.signInWithOAuth(
       provider,
-      redirectTo: redirectTo,
+      redirectTo: effectiveRedirect,
     );
     if (success) {
       _guestSessionStartTime = null;
+      _upgradeRequested = true;
       final userId = client.auth.currentUser?.id;
       if (userId != null) {
         try {
@@ -244,6 +265,7 @@ class AuthService {
       );
       _mockUser = upgradedUser;
       _guestSessionStartTime = null;
+      _upgradeRequested = true;
 
       return UserResponse.fromJson(<String, dynamic>{
         'id': preservedId,
@@ -263,6 +285,7 @@ class AuthService {
         password: password,
         displayName: displayName,
       );
+      _upgradeRequested = true;
       return UserResponse.fromJson(<String, dynamic>{
         if (signUpResponse.user != null) ...<String, dynamic>{
           'id': signUpResponse.user!.id,
@@ -287,6 +310,12 @@ class AuthService {
     // Sync display name and clear anonymous TTL on public.profiles
     if (response.user != null) {
       _guestSessionStartTime = null;
+      _upgradeRequested = true;
+      try {
+        await client.auth.refreshSession();
+      } catch (e) {
+        debugPrint('AuthService refreshSession notice: $e');
+      }
       try {
         await client.from('profiles').upsert(<String, dynamic>{
           'id': response.user!.id,
@@ -407,6 +436,7 @@ class AuthService {
     final client = _supabase;
     _mockUser = null;
     _guestSessionStartTime = null;
+    _upgradeRequested = false;
     if (client != null) {
       await client.auth.signOut();
     }
