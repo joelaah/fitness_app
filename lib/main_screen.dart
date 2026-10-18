@@ -397,10 +397,18 @@ class _MainScreenState extends State<MainScreen> {
                   onOpenPayments: () => _navigateToPayments(context),
                 ),
                 Expanded(
-                  child: IndexedStack(
-                    key: _stackKey,
-                    index: _selectedIndex,
-                    children: _screens,
+                  child: Column(
+                    children: [
+                      if (_buildHeaderAppBar(context) != null)
+                        _buildHeaderAppBar(context)!,
+                      Expanded(
+                        child: IndexedStack(
+                          key: _stackKey,
+                          index: _selectedIndex,
+                          children: _screens,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
