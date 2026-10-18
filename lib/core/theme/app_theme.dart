@@ -167,7 +167,7 @@ class AppTheme {
           TargetPlatform.macOS: PulseFitPageTransitionsBuilder(),
           TargetPlatform.linux: PulseFitPageTransitionsBuilder(),
           TargetPlatform.android: PulseFitPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: PulseFitPageTransitionsBuilder(),
         },
       ),
       useMaterial3: true,
