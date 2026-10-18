@@ -4,6 +4,7 @@ import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/animated_neon_volume_ring.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/perspective_tilt_card.dart';
+import 'package:fitness_app/core/widgets/shimmer_skeleton.dart';
 import 'package:fitness_app/features/routines/data/routine_templates.dart';
 import 'package:fitness_app/features/routines/models/routine.dart';
 import 'package:fitness_app/features/routines/providers/routine_provider.dart';
@@ -127,7 +128,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
         ],
       ),
       body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const ShimmerRoutinesSkeleton()
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
@@ -278,7 +279,16 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              blurRadius: 16,
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -441,6 +451,17 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
 
     final card = ElevatedCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      hasGlow: isRecommended,
+      glowColor: isRecommended ? AppColors.primary : null,
+      borderGradient: isRecommended
+          ? const LinearGradient(
+              colors: [
+                Color(0x8000E676),
+                Color(0x3300E676),
+                Color(0x22334155),
+              ],
+            )
+          : null,
       child: Row(
         children: [
           Container(

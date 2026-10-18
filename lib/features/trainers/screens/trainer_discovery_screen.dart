@@ -3,6 +3,7 @@ import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/category_chip.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
+import 'package:fitness_app/core/widgets/shimmer_skeleton.dart';
 import 'package:fitness_app/features/trainers/models/trainer_filter_criteria.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
 import 'package:fitness_app/features/trainers/screens/trainer_dashboard_screen.dart';
@@ -389,12 +390,7 @@ class _TrainerDiscoveryScreenState extends State<TrainerDiscoveryScreen> {
               ),
               if (_isLoading)
                 const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    ),
-                  ),
+                  child: ShimmerTrainerDiscoverySkeleton(),
                 )
               else if (_errorMessage != null)
                 SliverFillRemaining(

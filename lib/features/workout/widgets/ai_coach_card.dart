@@ -100,6 +100,17 @@ class _AiCoachCardState extends State<AiCoachCard> {
     return ElevatedCard(
       onTap: _openAiCoach,
       padding: const EdgeInsets.all(20),
+      hasGlow: true,
+      glowColor: AppColors.primary,
+      borderGradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0x6600E676),
+          Color(0x2206B6D4),
+          Color(0x22334155),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

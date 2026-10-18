@@ -1,5 +1,6 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/category_chip.dart';
+import 'package:fitness_app/core/widgets/shimmer_skeleton.dart';
 import 'package:fitness_app/features/exercises/models/exercise.dart';
 import 'package:fitness_app/features/exercises/models/exercise_target_classifier.dart';
 import 'package:fitness_app/features/exercises/services/exercise_service.dart';
@@ -116,7 +117,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
 
     return Scaffold(
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const ShimmerExerciseLibrarySkeleton()
           : CustomScrollView(
               slivers: [
                 SliverAppBar(

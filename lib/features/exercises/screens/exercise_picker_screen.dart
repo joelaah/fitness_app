@@ -1,4 +1,5 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
+import 'package:fitness_app/core/widgets/shimmer_skeleton.dart';
 import 'package:fitness_app/features/exercises/models/exercise.dart';
 import 'package:fitness_app/features/exercises/models/exercise_target_classifier.dart';
 import 'package:fitness_app/features/exercises/services/exercise_service.dart';
@@ -135,7 +136,7 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const ShimmerExerciseLibrarySkeleton()
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

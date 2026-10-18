@@ -3,6 +3,7 @@ import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/core/widgets/secondary_button.dart';
+import 'package:fitness_app/core/widgets/shimmer_skeleton.dart';
 import 'package:fitness_app/features/auth/services/auth_service.dart';
 import 'package:fitness_app/features/payments/screens/payment_history_screen.dart';
 import 'package:fitness_app/features/trainers/models/trainer_profile.dart';
@@ -202,11 +203,7 @@ class _TrainerDashboardScreenState extends State<TrainerDashboardScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Trainer Dashboard')),
-        body: const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
-        ),
+        body: const ShimmerTrainerDashboardSkeleton(),
       );
     }
 

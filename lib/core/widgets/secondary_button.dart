@@ -1,7 +1,7 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class SecondaryButton extends StatelessWidget {
+class SecondaryButton extends StatefulWidget {
   const SecondaryButton({
     required this.label,
     required this.onPressed,
@@ -15,21 +15,59 @@ class SecondaryButton extends StatelessWidget {
   final bool isDestructive;
 
   @override
+  State<SecondaryButton> createState() => _SecondaryButtonState();
+}
+
+class _SecondaryButtonState extends State<SecondaryButton> {
+  late final WidgetStatesController _statesController;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _statesController = WidgetStatesController();
+    _statesController.addListener(_onStatesChanged);
+  }
+
+  void _onStatesChanged() {
+    final pressed = _statesController.value.contains(WidgetState.pressed);
+    if (mounted && _isPressed != pressed) {
+      setState(() => _isPressed = pressed);
+    }
+  }
+
+  @override
+  void dispose() {
+    _statesController.removeListener(_onStatesChanged);
+    _statesController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        foregroundColor: isDestructive ? AppColors.error : AppColors.primary,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20),
-            const SizedBox(width: 8),
-          ],
-          Text(label),
-        ],
+    return RepaintBoundary(
+      child: AnimatedScale(
+        scale: _isPressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: TextButton(
+          statesController: _statesController,
+          onPressed: widget.onPressed,
+          style: TextButton.styleFrom(
+            foregroundColor:
+                widget.isDestructive ? AppColors.error : AppColors.primary,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.icon != null) ...[
+                Icon(widget.icon, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Text(widget.label),
+            ],
+          ),
+        ),
       ),
     );
   }
