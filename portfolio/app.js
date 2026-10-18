@@ -568,7 +568,8 @@ function initTerminal() {
   const commands = {
     help: () => `
 <div class="term-line"><span class="term-cyan">Available System Commands:</span></div>
-<div class="term-line">  <span class="term-accent">projects</span>    — List production AI systems (PulseFit AI, JOB SeArCh)</div>
+<div class="term-line">  <span class="term-accent">projects</span>    — List production AI systems & interactive learning hubs</div>
+<div class="term-line">  <span class="term-accent">arcade</span>      — Launch Systems Arcade & Interview Hub (104 Q&As, 7 Simulators)</div>
 <div class="term-line">  <span class="term-accent">skills</span>      — Inspect full engineering stack & vector DB experience</div>
 <div class="term-line">  <span class="term-accent">curl</span>        — Benchmark API latency (<span class="term-green">curl /api/match</span>)</div>
 <div class="term-line">  <span class="term-accent">metrics</span>     — View production performance telemetry</div>
@@ -586,7 +587,23 @@ function initTerminal() {
 <div class="term-line"><span class="term-cyan">2. JOB SeArCh</span> (Autonomous Semantic Career Engine)</div>
 <div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Grok LLM, Zero-Knowledge Vault</div>
 <div class="term-line">   • Video Reel: 1080p full demo with neural AI voiceover in assets/demo_reel.mp4</div>
-<div class="term-line">   • Live: <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="term-cyan">https://joelaah.github.io/Job-Searcher/</a></div>`,
+<div class="term-line">   • Live: <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="term-cyan">https://joelaah.github.io/Job-Searcher/</a></div>
+<br>
+<div class="term-line"><span class="term-cyan">3. Systems Arcade Hub</span> (Zero-to-Hero Architecture & Interview Lab)</div>
+<div class="term-line">   • Content: 104 Systems Q&As, 7 Interactive Simulation Labs, 3-Min Blitz Mode</div>
+<div class="term-line">   • Design Rationale: Gamified Neo-Brutalist arcade style combating cognitive working memory exhaustion</div>
+<div class="term-line">   • Live: <a href="interactive_learning_hub.html" target="_blank" class="term-accent">Open Systems Arcade ↗</a></div>`,
+
+    arcade: () => `
+<div class="term-line"><span class="term-cyan">⚡ Systems Arcade — Zero-to-Hero Interactive Learning Hub</span></div>
+<div class="term-line">   • <span class="term-accent">Curriculum:</span> 104 Battle-Tested Interview Q&As across 6 engineering domains</div>
+<div class="term-line">   • <span class="term-accent">Simulators:</span> 7 Animated Labs (PostgreSQL MVCC, 768d Vectors, Two-Stage RAG, Anti-SSRF, Zero-Knowledge Vault, Token Bucket, BLoC State)</div>
+<div class="term-line">   • <span class="term-accent">Cognitive Science:</span> Vibrant cartoon styling and 8-bit cues engineered to combat Cowan's working memory exhaustion (4±1 limit) and sustain focus.</div>
+<div class="term-line">   • <span class="term-green">Live Arcade:</span> <a href="interactive_learning_hub.html" target="_blank" class="term-accent">Launch Systems Arcade Hub ↗</a></div>
+<div class="term-line">   • <span class="term-cyan">Guides:</span> <a href="https://github.com/joelaah/fitness_app/blob/main/MASTER_100_INTERVIEW_QUESTIONS_AND_ANSWERS.md" target="_blank" class="term-cyan">100 Q&A Master Reference</a> | <a href="https://github.com/joelaah/fitness_app/blob/main/ZERO_TO_HERO_SYSTEMS_AND_INTERVIEW_GUIDE.md" target="_blank" class="term-cyan">Zero-to-Hero Systems Guide</a></div>`,
+
+    hub: () => commands.arcade(),
+    learn: () => commands.arcade(),
 
     skills: () => `
 <div class="term-line"><span class="term-cyan">Languages:</span> Dart, Python 3.12, JavaScript (ES6+), SQL, HTML5/CSS3</div>
