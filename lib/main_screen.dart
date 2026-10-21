@@ -296,14 +296,18 @@ class _MainScreenState extends State<MainScreen> {
     // Child tabs render their own dedicated headers.
     if (_selectedIndex != 0) return null;
 
-    final isNarrow = MediaQuery.sizeOf(context).width < 360;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isNarrow = screenWidth < 360;
+    final isWide = screenWidth >= 900;
 
     return AppBar(
       backgroundColor: AppColors.background,
       elevation: 0,
       centerTitle: false,
       titleSpacing: isNarrow ? 8.0 : 16.0,
-      title: Row(
+      title: isWide
+          ? null
+          : Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(

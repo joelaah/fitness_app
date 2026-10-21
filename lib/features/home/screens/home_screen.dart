@@ -2,6 +2,7 @@ import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
 import 'package:fitness_app/features/auth/widgets/guest_expiration_banner.dart';
+import 'package:fitness_app/features/nutrition/screens/food_scanner_screen.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/widgets/ai_coach_card.dart';
 import 'package:flutter/material.dart';
@@ -174,6 +175,72 @@ class HomeScreen extends StatelessWidget {
 
               // AI Coach Insights Card
               AiCoachCard(onTap: onOpenAiCoach),
+
+              const SizedBox(height: 16),
+
+              // AI Food & Macro Scanner Card
+              ElevatedCard(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                hasGlow: true,
+                glowColor: const Color(0xFF06B6D4),
+                borderGradient: const LinearGradient(
+                  colors: [
+                    Color(0x8006B6D4),
+                    Color(0x3300E676),
+                    Color(0x22334155),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const FoodScannerScreen(),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_scanner,
+                        color: Color(0xFF06B6D4),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI Food & Macro Scanner',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Scan meal photo with Atwater (4P + 4C + 9F) macro tracking',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: Color(0xFF06B6D4),
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 28),
               Text(
