@@ -4,6 +4,7 @@ import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/features/nutrition/models/daily_macro_summary.dart';
+import 'package:fitness_app/features/nutrition/screens/macro_calculator_screen.dart';
 import 'package:fitness_app/features/nutrition/models/nutrition_analysis_result.dart';
 import 'package:fitness_app/features/nutrition/services/nutrition_service.dart';
 import 'package:fitness_app/features/nutrition/widgets/food_scanner_overlay.dart';
@@ -358,6 +359,16 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
               MacroTargetCard(
                 summary: _summary,
                 onTapScanner: _pickImage,
+                onTapEditTargets: () async {
+                  final changed = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => MacroCalculatorScreen(nutritionService: _service),
+                    ),
+                  );
+                  if (changed == true) {
+                    await _loadTodaySummary();
+                  }
+                },
               ),
 
               const SizedBox(height: 20),

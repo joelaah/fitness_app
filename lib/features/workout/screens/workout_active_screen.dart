@@ -7,6 +7,7 @@ import 'package:fitness_app/features/exercises/models/exercise.dart';
 import 'package:fitness_app/features/exercises/services/exercise_service.dart';
 import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
+import 'package:fitness_app/features/workout/widgets/workout_summary_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -93,8 +94,39 @@ class _WorkoutActiveScreenState extends State<WorkoutActiveScreen> {
       ),
     ).then((confirmed) async {
       if (confirmed == true) {
+        final routineName = provider.activeSession?.routineName ?? 'Workout';
+        final durationSec = provider.workoutDuration.inSeconds;
+        final totalSets = provider.activeSession?.exercises
+                .where((e) => !e.isSkipped)
+                .expand((e) => e.sets)
+                .where((s) => s.isCompleted)
+                .length ??
+            0;
+        final totalReps = provider.activeSession?.exercises
+                .where((e) => !e.isSkipped)
+                .expand((e) => e.sets)
+                .where((s) => s.isCompleted)
+                .fold<int>(0, (sum, s) => sum + (s.completedReps ?? s.targetReps)) ??
+            0;
+
         await provider.finishWorkout();
-        if (mounted) Navigator.pop(context);
+        if (mounted) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => WorkoutSummaryDialog(
+              routineName: routineName,
+              durationSeconds: durationSec,
+              totalVolumeKg: provider.lastOverload?.currentVolume ?? 0,
+              totalReps: totalReps,
+              totalSets: totalSets,
+              overload: provider.lastOverload,
+              intensity: provider.lastIntensity,
+              calorieBurn: provider.lastCalorieBurn,
+            ),
+          );
+          if (mounted) Navigator.pop(context);
+        }
       }
     });
   }

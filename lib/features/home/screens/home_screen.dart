@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
@@ -21,11 +22,15 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // In the future, this will connect to a Workout/Progress Provider
-    // For now, we just show empty states since we haven't started any workouts.
-    final hasActiveWorkout = context.watch<WorkoutProvider>().hasActiveWorkout;
-    const currentStreak = 0; // TODO: compute from history
-    const workoutsThisWeek = 0; // TODO: compute from history
+    final workoutProvider = context.watch<WorkoutProvider>();
+    final hasActiveWorkout = workoutProvider.hasActiveWorkout;
+    final allSessions = workoutProvider.historyRepository.getAll();
+    final sessionDates = allSessions
+        .map((s) => s.endTime ?? s.startTime)
+        .toList();
+    final consistency = StreakCalculator.calculate(sessionDates);
+    final currentStreak = consistency.currentStreak;
+    final workoutsThisWeek = consistency.workoutsThisWeek;
 
     return Scaffold(
       body: SafeArea(

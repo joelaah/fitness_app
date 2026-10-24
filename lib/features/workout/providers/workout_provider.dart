@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io' show Platform;
+import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/features/exercises/services/exercise_service.dart';
 import 'package:fitness_app/features/routines/models/routine.dart';
 import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:fitness_app/features/workout/repositories/workout_history_repository.dart';
 import 'package:fitness_app/features/workout/services/supabase_workout_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class WorkoutProvider extends ChangeNotifier {
@@ -40,6 +42,14 @@ class WorkoutProvider extends ChangeNotifier {
   bool get isResting => _isResting;
   int get currentRestSeconds => _currentRestSeconds;
   Map<String, List<ExerciseSet>> get previousSets => _previousSets;
+
+  OverloadResult? _lastOverload;
+  IntensityResult? _lastIntensity;
+  CalorieBurnResult? _lastCalorieBurn;
+
+  OverloadResult? get lastOverload => _lastOverload;
+  IntensityResult? get lastIntensity => _lastIntensity;
+  CalorieBurnResult? get lastCalorieBurn => _lastCalorieBurn;
 
   void startWorkout(WorkoutRoutine routine, WorkoutDay day) {
     if (_activeSession != null) return;
@@ -133,7 +143,7 @@ class WorkoutProvider extends ChangeNotifier {
     if (_activeSession != null) {
       final now = DateTime.now();
       // Compute durationSeconds and totalVolume based on completed sets
-      final duration = now.difference(_activeSession!.startTime).inSeconds;
+      final duration = _workoutDuration.inSeconds > 0 ? _workoutDuration.inSeconds : now.difference(_activeSession!.startTime).inSeconds;
       double totalVol = 0;
       var totalReps = 0;
       for (final ex in _activeSession!.exercises) {
@@ -159,6 +169,40 @@ class WorkoutProvider extends ChangeNotifier {
         totalVolume: totalVol,
         totalReps: totalReps,
       );
+      // Compute progressive overload vs last session of same routine+day
+      final prevSession = _historyRepository.getLastSession(
+        routineId: _activeSession!.routineId,
+        dayId: _activeSession!.dayId,
+      );
+      double prevVol = 0;
+      if (prevSession != null) {
+        for (final ex in prevSession.exercises) {
+          if (ex.isSkipped) continue;
+          for (final s in ex.sets) {
+            if (s.isCompleted && s.completedReps != null) {
+              prevVol += s.completedReps! * (s.completedWeight ?? 0);
+            }
+          }
+        }
+      }
+      _lastOverload = ProgressiveOverload.compare(totalVol, prevVol);
+      _lastIntensity = WorkoutIntensity.calculate(
+        totalVolumeKg: totalVol,
+        durationSeconds: duration,
+      );
+      double userWeight = 75.0;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final rawWeight = prefs.get('profile_weight_kg');
+        if (rawWeight is num && rawWeight > 0) {
+          userWeight = rawWeight.toDouble();
+        }
+      } catch (_) {}
+      _lastCalorieBurn = CalorieBurn.estimateWorkoutBurn(
+        weightKg: userWeight,
+        durationSeconds: duration,
+      );
+
       // Save to local history for autofill and future stats
       await _historyRepository.save(finishedSession);
       // Background sync to Supabase if configured
@@ -217,7 +261,11 @@ class WorkoutProvider extends ChangeNotifier {
         .isCompleted;
 
     if (wasCompleted) {
-      _startRestTimer();
+      final completedEx = exercises.firstWhere((e) => e.id == sessionExerciseId);
+      final completedSet = completedEx.sets.firstWhere((s) => s.id == setId);
+      final reps = completedSet.completedReps ?? completedSet.targetReps;
+      final restSeconds = AdaptiveRest.fromReps(reps);
+      _startRestTimer(restSeconds);
     } else {
       _stopRestTimer();
     }
@@ -275,10 +323,10 @@ class WorkoutProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _startRestTimer() {
+  void _startRestTimer([int? seconds]) {
     _restTimer?.cancel();
     _isResting = true;
-    _currentRestSeconds = _restTimerDuration;
+    _currentRestSeconds = seconds ?? _restTimerDuration;
 
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_currentRestSeconds > 0) {

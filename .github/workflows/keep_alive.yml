@@ -2,8 +2,9 @@ name: Keep Render Backend Warm
 
 on:
   schedule:
-    # Run every 12 minutes to keep the Render.com free-tier instance alive (sleep threshold is 15m)
-    - cron: '*/12 * * * *'
+    # Run every 8 minutes to reliably beat Render's 15-minute inactivity spin-down,
+    # even when GitHub Actions runners experience queue delays.
+    - cron: '*/8 * * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions UI
 
 jobs:
@@ -16,7 +17,7 @@ jobs:
           echo "Pinging PulseFit AI RAG backend to maintain warm container..."
           
           # Render free tier takes 30-60s to wake up if cold.
-          # Allow up to 90s and protect against curl non-zero exit codes (e.g. exit code 28 on timeout).
+          # Allow up to 90s and protect against curl non-zero exit codes.
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 20 --max-time 90 "https://fitness-rag-api.onrender.com/health" || echo "000")
           echo "Initial HTTP status: $STATUS"
           
@@ -55,8 +56,5 @@ jobs:
             echo "ℹ️ QDRANT_URL or QDRANT_API_KEY secret not set in repository; skipping direct Qdrant ping."
           fi
 
-          # Always exit 0: The purpose of this scheduled task is to emit keep-alive traffic,
-          # not to fail CI builds or trigger GitHub error notification emails.
           echo "Keep-alive routine completed successfully."
           exit 0
-

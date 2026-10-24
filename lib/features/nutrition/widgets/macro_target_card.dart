@@ -9,11 +9,13 @@ class MacroTargetCard extends StatelessWidget {
   const MacroTargetCard({
     required this.summary,
     this.onTapScanner,
+    this.onTapEditTargets,
     super.key,
   });
 
   final DailyMacroSummary summary;
   final VoidCallback? onTapScanner;
+  final VoidCallback? onTapEditTargets;
 
   @override
   Widget build(BuildContext context) {
@@ -74,12 +76,23 @@ class MacroTargetCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (onTapScanner != null)
-                IconButton(
-                  icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
-                  tooltip: 'Scan Food',
-                  onPressed: onTapScanner,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onTapEditTargets != null)
+                    IconButton(
+                      icon: const Icon(Icons.tune_rounded, color: AppColors.primary, size: 20),
+                      tooltip: 'Personalize Targets',
+                      onPressed: onTapEditTargets,
+                    ),
+                  if (onTapScanner != null)
+                    IconButton(
+                      icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+                      tooltip: 'Scan Food',
+                      onPressed: onTapScanner,
+                    ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 18),

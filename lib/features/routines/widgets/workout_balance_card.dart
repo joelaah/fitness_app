@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
@@ -42,6 +43,18 @@ class WorkoutBalanceCard extends StatelessWidget {
 
     final adviceList = _generateSmartAdvice(groupCounts, subTargetCounts);
 
+    final volumeMap = <String, double>{};
+    for (final entry in groupCounts.entries) {
+      volumeMap[entry.key] = entry.value.toDouble();
+    }
+    final balanceResult = VolumeBalance.score(volumeMap);
+
+    final hasWarning = adviceList.any((a) => a.isWarning);
+    final isHighTension = adviceList.any((a) => a.isWarning && (a.message.contains('tension') || a.message.contains('volume')));
+    final badgeText = hasWarning
+        ? (isHighTension ? 'High tension' : 'Tips available')
+        : (balanceResult.score > 0 ? '${balanceResult.score.round()}/100 · Balanced' : 'Balanced');
+
     return Padding(
       padding: const EdgeInsets.only(
         left: AppSpacing.md,
@@ -83,26 +96,19 @@ class WorkoutBalanceCard extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: adviceList.any((a) => a.isWarning)
+                    color: hasWarning
                         ? Colors.amber.withValues(alpha: 0.15)
-                        : Colors.green.withValues(alpha: 0.15),
+                        : (balanceResult.score >= 70
+                            ? Colors.green.withValues(alpha: 0.15)
+                            : Colors.cyan.withValues(alpha: 0.15)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    adviceList.any((a) => a.isWarning)
-                        ? (adviceList.any(
-                                (a) =>
-                                    a.isWarning &&
-                                    (a.message.contains('tension') ||
-                                        a.message.contains('volume')),
-                              )
-                              ? 'High tension'
-                              : 'Tips available')
-                        : 'Balanced',
+                    badgeText,
                     style: TextStyle(
-                      color: adviceList.any((a) => a.isWarning)
+                      color: hasWarning
                           ? Colors.amber
-                          : Colors.green,
+                          : (balanceResult.score >= 70 ? Colors.green : const Color(0xFF06B6D4)),
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),

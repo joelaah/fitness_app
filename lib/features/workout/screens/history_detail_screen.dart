@@ -1,3 +1,4 @@
+import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/features/exercises/models/exercise.dart';
@@ -451,16 +452,75 @@ class _ExerciseCard extends StatelessWidget {
                 final set = exercise.sets[i];
                 return _SetRow(set: set, index: i + 1);
               }),
+              _buildEstimated1RMPill(completedSets),
             ],
           ],
         ),
       ),
     );
   }
+  Widget _buildEstimated1RMPill(List<ExerciseSet> completedSets) {
+    double best1RM = 0;
+    int bestReps = 0;
+    for (final s in completedSets) {
+      final w = s.completedWeight ?? s.targetWeight;
+      final r = s.completedReps ?? s.targetReps;
+      if (w > 0 && r > 0) {
+        final est = OneRepMax.estimate(w, r);
+        if (est > best1RM) {
+          best1RM = est;
+          bestReps = r;
+        }
+      }
+    }
+    if (best1RM <= 0) return const SizedBox.shrink();
+
+    final zone = AdaptiveRest.zoneLabel(bestReps);
+    final weightStr = best1RM % 1 == 0 ? best1RM.toInt().toString() : best1RM.toStringAsFixed(1);
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.bolt_rounded,
+            size: 14,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Est. 1RM: ' + weightStr + ' kg',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            zone.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary.withValues(alpha: 0.9),
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ─── Set Row ─────────────────────────────────────────────────────────────────
 
+// ─── Set Row ─────────────────────────────────────────────────────────────────
 class _SetRow extends StatelessWidget {
   const _SetRow({required this.set, required this.index});
   final ExerciseSet set;
