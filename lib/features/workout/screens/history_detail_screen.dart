@@ -496,7 +496,7 @@ class _ExerciseCard extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            'Est. 1RM: ' + weightStr + ' kg',
+            'Est. 1RM: $weightStr kg',
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,

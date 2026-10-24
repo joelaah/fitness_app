@@ -487,7 +487,7 @@ class MuscleFrequencyAnalyzer {
 
   /// Analyze training frequency per muscle group over a date range.
   ///
-  /// [sessionsWithMuscles] — List of (sessionDate, List<muscleGroup>) pairs.
+  /// [sessionsWithMuscles] — List of (sessionDate, List of muscle groups) pairs.
   /// [windowDays] — Analysis window (default 28 days = 4 weeks).
   static List<MuscleFrequencyResult> analyze(
     List<({DateTime date, List<String> muscles})> sessionsWithMuscles, {

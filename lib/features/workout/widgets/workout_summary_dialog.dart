@@ -1,7 +1,5 @@
-import 'dart:ui';
 import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
-import 'package:fitness_app/core/theme/app_spacing.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:flutter/material.dart';
 
