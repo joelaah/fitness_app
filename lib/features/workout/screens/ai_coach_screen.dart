@@ -146,16 +146,54 @@ class _AiCoachViewState extends State<_AiCoachView> {
             length: 2,
             child: Scaffold(
               appBar: AppBar(
-                title: const Row(
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                backgroundColor: AppColors.background,
+                title: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-                    SizedBox(width: 8),
-                    Text('AI Coach'),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Flexible(
+                      child: Text(
+                        'AI Coach',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
                 bottom: const TabBar(
                   indicatorColor: AppColors.primary,
+                  indicatorWeight: 2.5,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: AppColors.primary,
+                  unselectedLabelColor: AppColors.textSecondary,
+                  labelStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                  unselectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
                   tabs: [
                     Tab(
                       icon: Icon(Icons.chat_bubble_outline_rounded, size: 18),
@@ -187,11 +225,13 @@ class _AiCoachViewState extends State<_AiCoachView> {
                     ),
                 ],
               ),
-              body: TabBarView(
-                children: [
-                  _buildChatTab(context, theme),
-                  _buildInsightsTab(context, theme, hasHistory),
-                ],
+              body: Builder(
+                builder: (tabContext) => TabBarView(
+                  children: [
+                    _buildChatTab(tabContext, theme),
+                    _buildInsightsTab(tabContext, theme, hasHistory),
+                  ],
+                ),
               ),
             ),
           );
@@ -200,12 +240,38 @@ class _AiCoachViewState extends State<_AiCoachView> {
         // Desktop Dual-Column Split-View
         return Scaffold(
           appBar: AppBar(
-            title: const Row(
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            backgroundColor: AppColors.background,
+            title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-                SizedBox(width: 8),
-                Text('AI Coach & RAG Insights'),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Flexible(
+                  child: Text(
+                    'AI Coach & RAG Insights',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             actions: [
@@ -254,6 +320,546 @@ class _AiCoachViewState extends State<_AiCoachView> {
     );
   }
 
+  Widget _buildWelcomeCard(
+      BuildContext context, ThemeData theme, ChatMessage msg) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 3),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          'AURA AI COACH',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.1,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'ONLINE',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Evidence-Based Exercise Science Core',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Colors.white10),
+          const SizedBox(height: 14),
+          SelectableText(
+            msg.text,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.5,
+              fontSize: 13.5,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildCapabilityBadge('⚡ Progressive Overload'),
+              _buildCapabilityBadge('🔬 Hypertrophy Science'),
+              _buildCapabilityBadge('🛡️ Injury Prevention'),
+              _buildCapabilityBadge('🔄 Fatigue & Deloads'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCapabilityBadge(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAssistantMessage(
+      BuildContext context, ThemeData theme, ChatMessage msg) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        constraints: BoxConstraints(
+          maxWidth: (MediaQuery.of(context).size.width * 0.85)
+              .clamp(0.0, 540.0),
+        ),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(4),
+            bottomRight: Radius.circular(18),
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 13,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Aura Coach',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                if (msg.sourceType == 'local_fallback')
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.amber.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      'Server Warming Up',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.amber,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SelectableText(
+              msg.text,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.48,
+                fontSize: 13.5,
+              ),
+            ),
+            if (msg.sources.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: msg.sources.map((s) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 4),
+                              child: Icon(
+                                Icons.menu_book_rounded,
+                                size: 11,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          TextSpan(
+                            text: s,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w500,
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserMessage(
+      BuildContext context, ThemeData theme, ChatMessage msg) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        constraints: BoxConstraints(
+          maxWidth: (MediaQuery.of(context).size.width * 0.85)
+              .clamp(0.0, 540.0),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.16),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(4),
+          ),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.4),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: SelectableText(
+          msg.text,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: AppColors.textPrimary,
+            height: 1.45,
+            fontSize: 13.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromptChips() {
+    final chipHeight =
+        (42.0 * MediaQuery.textScalerOf(context).scale(1.0)).clamp(42.0, 72.0);
+    return SizedBox(
+      height: chipHeight,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: _quickPrompts.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (context, idx) {
+          final prompt = _quickPrompts[idx];
+          return Material(
+            color: Colors.transparent,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated.withValues(alpha: 0.75),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 1,
+                ),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                splashColor: AppColors.primary.withValues(alpha: 0.2),
+                highlightColor: AppColors.primary.withValues(alpha: 0.1),
+                onTap: () => _sendMessage(prompt),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome,
+                        size: 13,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        prompt,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        softWrap: false,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildChatInputDock(bool isSending) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _textController,
+                    onSubmitted: (_) => _sendMessage(),
+                    textInputAction: TextInputAction.send,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Ask Aura Coach anything...',
+                      hintStyle: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13.5,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: AppColors.textSecondary,
+                        size: 18,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: isSending
+                      ? const LinearGradient(
+                          colors: [
+                            AppColors.surfaceElevated,
+                            AppColors.surfaceElevated,
+                          ],
+                        )
+                      : const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primaryVariant,
+                          ],
+                        ),
+                  shape: BoxShape.circle,
+                  boxShadow: isSending
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                ),
+                child: IconButton(
+                  icon: isSending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primary,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.arrow_upward_rounded,
+                          color: Colors.black,
+                          size: 22,
+                        ),
+                  onPressed: isSending ? null : () => _sendMessage(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildChatTab(BuildContext context, ThemeData theme) {
     return BlocBuilder<AiCoachBloc, AiCoachState>(
       builder: (context, state) {
@@ -266,8 +872,9 @@ class _AiCoachViewState extends State<_AiCoachView> {
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 itemCount: messages.length + (isSending ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (isSending && index == messages.length) {
@@ -285,6 +892,12 @@ class _AiCoachViewState extends State<_AiCoachView> {
                           border: Border.all(
                             color: AppColors.primary.withValues(alpha: 0.3),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                            ),
+                          ],
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -314,151 +927,22 @@ class _AiCoachViewState extends State<_AiCoachView> {
                   }
 
                   final msg = messages[index];
-                  final isUser = msg.isUser;
-                  final text = msg.text;
-                  final sources = msg.sources;
+                  // If first message and is assistant, render dedicated Welcome Card
+                  if (index == 0 && !msg.isUser) {
+                    return _buildWelcomeCard(context, theme, msg);
+                  }
 
-                  return Align(
-                    alignment:
-                        isUser ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      constraints: BoxConstraints(
-                        maxWidth: (MediaQuery.of(context).size.width * 0.82)
-                            .clamp(0.0, 520.0),
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isUser
-                            ? AppColors.primary.withValues(alpha: 0.2)
-                            : AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(16),
-                          topRight: const Radius.circular(16),
-                          bottomLeft: Radius.circular(isUser ? 16 : 4),
-                          bottomRight: Radius.circular(isUser ? 4 : 16),
-                        ),
-                        border: Border.all(
-                          color: isUser
-                              ? AppColors.primary.withValues(alpha: 0.5)
-                              : Colors.white10,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: isUser
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          if (!isUser)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.auto_awesome,
-                                  size: 13,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Aura Coach',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (msg.sourceType == 'local_fallback') ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.amber.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      'Server Warming Up',
-                                      style:
-                                          theme.textTheme.labelSmall?.copyWith(
-                                        color: Colors.amber,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          if (!isUser) const SizedBox(height: 6),
-                          SelectableText(
-                            text,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.white,
-                              height: 1.45,
-                            ),
-                          ),
-                          if (sources.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 6,
-                              children: sources.map((s) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: AppColors.primary
-                                          .withValues(alpha: 0.3),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    '📚 $s',
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
+                  if (!msg.isUser) {
+                    return _buildAssistantMessage(context, theme, msg);
+                  }
+
+                  return _buildUserMessage(context, theme, msg);
                 },
               ),
             ),
 
             // Quick suggestions
-            SizedBox(
-              height: 38,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: _quickPrompts.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, idx) {
-                  final prompt = _quickPrompts[idx];
-                  return ActionChip(
-                    label: Text(
-                      prompt,
-                      style: const TextStyle(fontSize: 12, color: Colors.white),
-                    ),
-                    backgroundColor: AppColors.surfaceElevated,
-                    side: const BorderSide(color: Colors.white12),
-                    onPressed: () => _sendMessage(prompt),
-                  );
-                },
-              ),
-            ),
+            _buildPromptChips(),
             if (state.isQuotaExceeded)
               Container(
                 key: const Key('ai_quota_upgrade_prompt'),
@@ -487,8 +971,11 @@ class _AiCoachViewState extends State<_AiCoachView> {
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 10),
                     ElevatedButton(
                       key: const Key('upgrade_prompt_button'),
                       style: ElevatedButton.styleFrom(
@@ -518,64 +1005,8 @@ class _AiCoachViewState extends State<_AiCoachView> {
               ),
             const SizedBox(height: 8),
 
-            // Chat input bar
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: Colors.white10)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      onSubmitted: (_) => _sendMessage(),
-                      textInputAction: TextInputAction.send,
-                      decoration: InputDecoration(
-                        hintText: 'Ask Aura Coach anything...',
-                        hintStyle: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surfaceElevated,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_upward_rounded,
-                        color: Colors.black,
-                        size: 20,
-                      ),
-                      onPressed: isSending ? null : () => _sendMessage(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Chat input dock
+            _buildChatInputDock(isSending),
           ],
         );
       },
@@ -586,14 +1017,16 @@ class _AiCoachViewState extends State<_AiCoachView> {
       BuildContext context, ThemeData theme, bool hasHistory) {
     if (!hasHistory) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: EmptyStateWidget(
             icon: Icons.auto_awesome,
             title: 'No Workout History Yet',
             description:
                 'Complete your first workout so the AI Coach can analyze your volume, fatigue, and progression.',
             buttonText: 'Go to AI Chat',
+            isCard: true,
             onButtonPressed: () {
               DefaultTabController.maybeOf(context)?.animateTo(0);
             },
@@ -698,41 +1131,50 @@ class _AiCoachViewState extends State<_AiCoachView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Info
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.auto_awesome,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Evidence-Based Coaching',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          Text(
-                            'Based on your last ${rec.sessionsAnalyzed} sessions',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          child: const Icon(
+                            Icons.auto_awesome,
+                            color: AppColors.primary,
+                            size: 24,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Evidence-Based Coaching',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Based on your last ${rec.sessionsAnalyzed} sessions',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    if (rec.pipelineSource == 'rag')
+                    if (rec.pipelineSource == 'rag') ...[
+                      const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -749,9 +1191,10 @@ class _AiCoachViewState extends State<_AiCoachView> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      )
-                    else if (rec.pipelineSource == 'local_fallback' ||
-                        rec.pipelineSource == 'local')
+                      ),
+                    ] else if (rec.pipelineSource == 'local_fallback' ||
+                        rec.pipelineSource == 'local') ...[
+                      const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -768,8 +1211,9 @@ class _AiCoachViewState extends State<_AiCoachView> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      )
-                    else if (rec.cached)
+                      ),
+                    ] else if (rec.cached) ...[
+                      const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -786,6 +1230,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
                           ),
                         ),
                       ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -798,24 +1243,31 @@ class _AiCoachViewState extends State<_AiCoachView> {
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _StatColumn(
-                            label: 'Workouts',
-                            value: '${summary.sessionsAnalyzed}',
+                          Expanded(
+                            child: _StatColumn(
+                              label: 'Workouts',
+                              value: '${summary.sessionsAnalyzed}',
+                            ),
                           ),
-                          _StatColumn(
-                            label: 'Volume',
-                            value:
-                                '${summary.totalVolume.toStringAsFixed(0)} kg',
+                          Expanded(
+                            child: _StatColumn(
+                              label: 'Volume',
+                              value:
+                                  '${summary.totalVolume.toStringAsFixed(0)} kg',
+                            ),
                           ),
-                          _StatColumn(
-                            label: 'Sets',
-                            value: '${summary.totalSets}',
+                          Expanded(
+                            child: _StatColumn(
+                              label: 'Sets',
+                              value: '${summary.totalSets}',
+                            ),
                           ),
-                          _StatColumn(
-                            label: 'Reps',
-                            value: '${summary.totalReps}',
+                          Expanded(
+                            child: _StatColumn(
+                              label: 'Reps',
+                              value: '${summary.totalReps}',
+                            ),
                           ),
                         ],
                       ),
@@ -863,9 +1315,13 @@ class _AiCoachViewState extends State<_AiCoachView> {
                       ],
 
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.trending_up,
-                              color: AppColors.primary, size: 20),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 1),
+                            child: Icon(Icons.trending_up,
+                                color: AppColors.primary, size: 20),
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -880,9 +1336,13 @@ class _AiCoachViewState extends State<_AiCoachView> {
                       if (summary.recentlyUntrainedMuscleGroups.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.battery_charging_full,
-                                color: AppColors.secondaryAccent, size: 20),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 1),
+                              child: Icon(Icons.battery_charging_full,
+                                  color: AppColors.secondaryAccent, size: 20),
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -911,16 +1371,17 @@ class _AiCoachViewState extends State<_AiCoachView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 6,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  item.title,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
+                              Text(
+                                item.title,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
                                 ),
                               ),
                               Container(
@@ -1014,9 +1475,13 @@ class _AiCoachViewState extends State<_AiCoachView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.fitness_center,
-                              color: AppColors.primary, size: 24),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(Icons.fitness_center,
+                                color: AppColors.primary, size: 24),
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -1055,8 +1520,8 @@ class _AiCoachViewState extends State<_AiCoachView> {
                                 const Text('• ',
                                     style: TextStyle(color: AppColors.primary)),
                                 Expanded(
-                                  child: RichText(
-                                    text: TextSpan(
+                                  child: Text.rich(
+                                    TextSpan(
                                       style: theme.textTheme.bodyMedium,
                                       children: [
                                         TextSpan(
@@ -1134,19 +1599,31 @@ class _StatColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          value,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: AppColors.primary,
+            ),
+            maxLines: 1,
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.textSecondary,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
           ),
         ),
       ],
