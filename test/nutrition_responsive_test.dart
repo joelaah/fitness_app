@@ -5,7 +5,6 @@ import 'package:fitness_app/features/nutrition/widgets/food_scanner_overlay.dart
 import 'package:fitness_app/features/nutrition/widgets/macro_target_card.dart';
 import 'package:fitness_app/features/nutrition/widgets/meal_review_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
