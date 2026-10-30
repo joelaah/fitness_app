@@ -600,7 +600,7 @@ function initTerminal() {
 <div class="term-line">   • <span class="term-accent">Simulators:</span> 7 Animated Labs (PostgreSQL MVCC, 768d Vectors, Two-Stage RAG, Anti-SSRF, Zero-Knowledge Vault, Token Bucket, BLoC State)</div>
 <div class="term-line">   • <span class="term-accent">Cognitive Science:</span> Vibrant cartoon styling and 8-bit cues engineered to combat Cowan's working memory exhaustion (4±1 limit) and sustain focus.</div>
 <div class="term-line">   • <span class="term-green">Live Arcade:</span> <a href="interactive_learning_hub.html" target="_blank" class="term-accent">Launch Systems Arcade Hub ↗</a></div>
-<div class="term-line">   • <span class="term-cyan">Guides:</span> <a href="https://github.com/joelaah/fitness_app/blob/main/MASTER_100_INTERVIEW_QUESTIONS_AND_ANSWERS.md" target="_blank" class="term-cyan">100 Q&A Master Reference</a> | <a href="https://github.com/joelaah/fitness_app/blob/main/ZERO_TO_HERO_SYSTEMS_AND_INTERVIEW_GUIDE.md" target="_blank" class="term-cyan">Zero-to-Hero Systems Guide</a></div>`,
+<div class="term-line">   • <span class="term-cyan">Guides:</span> <a href="https://github.com/joelaah/fitness_app/blob/main/portfolio/MASTER_100_INTERVIEW_QUESTIONS_AND_ANSWERS.md" target="_blank" class="term-cyan">100 Q&A Master Reference</a> | <a href="https://github.com/joelaah/fitness_app/blob/main/portfolio/ZERO_TO_HERO_SYSTEMS_AND_INTERVIEW_GUIDE.md" target="_blank" class="term-cyan">Zero-to-Hero Systems Guide</a></div>`,
 
     hub: () => commands.arcade(),
     learn: () => commands.arcade(),
