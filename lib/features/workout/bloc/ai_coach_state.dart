@@ -61,7 +61,7 @@ class AiCoachState extends Equatable {
   static const ChatMessage initialChatMessage = ChatMessage(
     role: 'assistant',
     text:
-        'Hey! I am your Aura AI Coach, powered by exercise science research.\n\nAsk me anything about progressive overload, lifting technique, muscle recovery, warmups, or injury prevention!',
+        'Hey! I am your PulseFit AI Coach, powered by exercise science research.\n\nAsk me anything about progressive overload, lifting technique, muscle recovery, warmups, or injury prevention!',
     sources: [],
     sourceType: 'rag',
   );

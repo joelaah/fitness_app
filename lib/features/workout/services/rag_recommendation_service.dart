@@ -43,14 +43,26 @@ class RagRecommendationService {
 
   static const _cacheKey = 'cached_ai_recommendation';
 
-  /// Maximum number of automatic retries for cold-start and transient failures (up to 3 retries)
-  static const _maxRetries = 3;
+  /// Maximum number of automatic retries for cold-start and transient failures (1 retry max)
+  static const _maxRetries = 1;
 
-  /// Request timeout threshold: 15-second timeout for remote AI calls.
-  static const _requestTimeout = Duration(seconds: 15);
+  /// Request timeout threshold: 7-second timeout for remote AI calls to prevent freezes.
+  static const _requestTimeout = Duration(seconds: 7);
 
   /// Whether a warm-up ping is already in-flight (avoids duplicate pings)
   static bool _warmUpInFlight = false;
+
+  /// Fast-path health check to quickly verify backend status before slow operations.
+  Future<bool> checkHealth({Duration timeout = const Duration(seconds: 3)}) async {
+    try {
+      final res = await _client
+          .get(Uri.parse('$_baseUrl/health'))
+          .timeout(timeout);
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
 
   // ── Client-side rate limiting ──────────────────────────────────────
   /// Minimum interval between consecutive chat requests
@@ -508,7 +520,10 @@ class RagRecommendationService {
   /// Applies client-side rate limiting, input sanitization, and
   /// automatically retries up to [_maxRetries] times on timeout / server
   /// errors to handle Render.com cold-start latency transparently.
-  Future<Map<String, dynamic>> sendChatMessage(String message) async {
+  Future<Map<String, dynamic>> sendChatMessage(
+    String message, {
+    List<Map<String, String>>? history,
+  }) async {
     // 1. Sanitize input
     final sanitized = _sanitizeMessage(message);
     if (sanitized.isEmpty) {
@@ -543,6 +558,11 @@ class RagRecommendationService {
           }
         }
 
+        final Map<String, dynamic> body = {
+          'message': sanitized,
+          if (history != null && history.isNotEmpty) 'history': history,
+        };
+
         final response = await _client
             .post(
               url,
@@ -550,7 +570,7 @@ class RagRecommendationService {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer $token',
               },
-              body: jsonEncode({'message': sanitized}),
+              body: jsonEncode(body),
             )
             .timeout(_requestTimeout);
 

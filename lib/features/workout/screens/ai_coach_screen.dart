@@ -10,6 +10,7 @@ import 'package:fitness_app/features/workout/services/rag_recommendation_service
 import 'package:fitness_app/features/workout/widgets/ai_quota_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class AiCoachScreen extends StatelessWidget {
   const AiCoachScreen({
@@ -386,7 +387,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
                       runSpacing: 4,
                       children: [
                         Text(
-                          'AURA AI COACH',
+                          'PULSEFIT AI COACH',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.1,
@@ -447,12 +448,22 @@ class _AiCoachViewState extends State<_AiCoachView> {
           const SizedBox(height: 14),
           const Divider(height: 1, color: Colors.white10),
           const SizedBox(height: 14),
-          SelectableText(
-            msg.text,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: AppColors.textPrimary,
-              height: 1.5,
-              fontSize: 13.5,
+          MarkdownBody(
+            data: msg.text,
+            selectable: true,
+            styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+              p: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.5,
+                fontSize: 13.5,
+              ),
+              strong: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              listBullet: const TextStyle(
+                color: AppColors.primary,
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -540,7 +551,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'Aura Coach',
+                      'PulseFit AI Coach',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -573,12 +584,39 @@ class _AiCoachViewState extends State<_AiCoachView> {
               ],
             ),
             const SizedBox(height: 8),
-            SelectableText(
-              msg.text,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
-                height: 1.48,
-                fontSize: 13.5,
+            MarkdownBody(
+              data: msg.text,
+              selectable: true,
+              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                p: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textPrimary,
+                  height: 1.48,
+                  fontSize: 13.5,
+                ),
+                strong: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                h1: theme.textTheme.titleMedium?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                h2: theme.textTheme.titleSmall?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                h3: theme.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                listBullet: const TextStyle(
+                  color: AppColors.primary,
+                ),
+                code: TextStyle(
+                  backgroundColor: AppColors.surface,
+                  color: AppColors.primary,
+                  fontFamily: 'monospace',
+                ),
               ),
             ),
             if (msg.sources.isNotEmpty) ...[
@@ -783,7 +821,7 @@ class _AiCoachViewState extends State<_AiCoachView> {
                       fontSize: 14,
                     ),
                     decoration: const InputDecoration(
-                      hintText: 'Ask Aura Coach anything...',
+                      hintText: 'Ask PulseFit AI Coach anything...',
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13.5,

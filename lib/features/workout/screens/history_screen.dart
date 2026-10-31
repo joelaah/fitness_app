@@ -40,7 +40,7 @@ class HistoryScreen extends StatelessWidget {
                       icon: Icons.history_rounded,
                       title: 'No Workouts Yet',
                       description:
-                          'Your completed workouts will show up here.\\nGo crush a session!',
+                          'Your completed workouts will show up here.\nGo crush a session!',
                     ),
                   ),
           ),

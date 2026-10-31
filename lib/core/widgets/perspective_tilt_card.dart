@@ -1,8 +1,16 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
+import 'package:fitness_app/core/theme/spring_motion.dart';
 import 'package:flutter/material.dart';
 
 /// Interactive card wrapper providing hardware-accelerated 3D perspective tilt
-/// response to mouse hover on desktop/web and touch gestures on mobile.
+/// and organic Zero Hub fluid spring physics.
+///
+/// Features:
+/// - Real-time 3D Matrix4 perspective response to cursor hover on web/desktop.
+/// - Dynamic vertical card lift (-6px) and subtle scale expansion.
+/// - Fluid organic spring release using Zero Hub's `cubic-bezier(0.16, 1, 0.3, 1)`.
+/// - Dynamic specular glare radial gradient tracking light reflection.
+/// - Smooth hairline neon border illumination on interaction.
 class PerspectiveTiltCard extends StatefulWidget {
   const PerspectiveTiltCard({
     required this.child,
@@ -15,6 +23,9 @@ class PerspectiveTiltCard extends StatefulWidget {
     this.glareIntensity = 0.15,
     this.borderColor,
     this.elevation = 4.0,
+    this.liftDistance = 6.0,
+    this.glowColor,
+    this.springDuration = const Duration(milliseconds: 320),
   });
 
   final Widget child;
@@ -27,6 +38,15 @@ class PerspectiveTiltCard extends StatefulWidget {
   final Color? borderColor;
   final double elevation;
 
+  /// Vertical physical lift in pixels applied on hover (default: 6.0).
+  final double liftDistance;
+
+  /// Optional custom glow color (defaults to [AppColors.primary]).
+  final Color? glowColor;
+
+  /// Duration of the fluid spring release on pointer exit.
+  final Duration springDuration;
+
   @override
   State<PerspectiveTiltCard> createState() => _PerspectiveTiltCardState();
 }
@@ -37,10 +57,12 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
   late Animation<double> _rotXAnimation;
   late Animation<double> _rotYAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _translateYAnimation;
 
   double _currentRotX = 0.0;
   double _currentRotY = 0.0;
   double _currentScale = 1.0;
+  double _currentTranslateY = 0.0;
   double _glareX = 0.0;
   double _glareY = 0.0;
   bool _isInteracting = false;
@@ -50,12 +72,13 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
     super.initState();
     _springController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 240),
+      duration: widget.springDuration,
     )..addListener(() {
         setState(() {
           _currentRotX = _rotXAnimation.value;
           _currentRotY = _rotYAnimation.value;
           _currentScale = _scaleAnimation.value;
+          _currentTranslateY = _translateYAnimation.value;
         });
       });
   }
@@ -77,6 +100,7 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
       _currentRotX = -normY.clamp(-1.0, 1.0) * widget.maxTiltAngle;
       _currentRotY = normX.clamp(-1.0, 1.0) * widget.maxTiltAngle;
       _currentScale = widget.scaleFactor;
+      _currentTranslateY = -widget.liftDistance;
       _glareX = normX;
       _glareY = normY;
     });
@@ -85,26 +109,34 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
   void _onPointerExit() {
     if (!mounted) return;
     _springController.stop();
+
     _rotXAnimation = Tween<double>(
       begin: _currentRotX,
       end: 0.0,
     ).animate(CurvedAnimation(
       parent: _springController,
-      curve: Curves.easeOutCubic,
+      curve: ZeroMotionCurves.fluidOut,
     ));
     _rotYAnimation = Tween<double>(
       begin: _currentRotY,
       end: 0.0,
     ).animate(CurvedAnimation(
       parent: _springController,
-      curve: Curves.easeOutCubic,
+      curve: ZeroMotionCurves.fluidOut,
     ));
     _scaleAnimation = Tween<double>(
       begin: _currentScale,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _springController,
-      curve: Curves.easeOutCubic,
+      curve: ZeroMotionCurves.fluidOut,
+    ));
+    _translateYAnimation = Tween<double>(
+      begin: _currentTranslateY,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _springController,
+      curve: ZeroMotionCurves.fluidOut,
     ));
 
     setState(() {
@@ -122,9 +154,12 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
       builder: (context, constraints) {
         final matrix = Matrix4.identity()
           ..setEntry(3, 2, 0.001) // 3D perspective focal depth
+          ..translate(0.0, _currentTranslateY, 0.0)
           ..rotateX(_currentRotX)
           ..rotateY(_currentRotY)
           ..scale(_currentScale);
+
+        final activeColor = widget.glowColor ?? AppColors.primary;
 
         return RepaintBoundary(
           child: MouseRegion(
@@ -156,18 +191,18 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
                     borderRadius: BorderRadius.circular(widget.borderRadius),
                     border: Border.all(
                       color: _isInteracting
-                          ? AppColors.primary.withAlpha(128)
+                          ? activeColor.withValues(alpha: 0.55)
                           : (widget.borderColor ?? Colors.transparent),
                       width: _isInteracting ? 1.5 : 1.0,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: _isInteracting
-                            ? AppColors.primary.withAlpha(45)
-                            : Colors.black.withAlpha(90),
-                        blurRadius: _isInteracting ? 16.0 : widget.elevation,
+                            ? activeColor.withValues(alpha: 0.22)
+                            : Colors.black.withValues(alpha: 0.35),
+                        blurRadius: _isInteracting ? 20.0 : widget.elevation,
                         offset: _isInteracting
-                            ? Offset(-_glareX * 6.0, -_glareY * 6.0 + 4.0)
+                            ? Offset(-_glareX * 8.0, -_glareY * 8.0 + 6.0)
                             : const Offset(0, 3),
                       ),
                     ],
@@ -183,15 +218,14 @@ class _PerspectiveTiltCardState extends State<PerspectiveTiltCard>
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: RadialGradient(
-                                    center:
-                                        Alignment(_glareX * 1.2, _glareY * 1.2),
+                                    center: Alignment(_glareX * 1.2, _glareY * 1.2),
                                     radius: 0.85,
                                     colors: [
-                                      Colors.white.withAlpha(
-                                        (widget.glareIntensity * 255).toInt(),
+                                      Colors.white.withValues(
+                                        alpha: (widget.glareIntensity * 0.9).clamp(0.0, 1.0),
                                       ),
-                                      AppColors.primary.withAlpha(
-                                        (widget.glareIntensity * 128).toInt(),
+                                      activeColor.withValues(
+                                        alpha: (widget.glareIntensity * 0.5).clamp(0.0, 1.0),
                                       ),
                                       Colors.transparent,
                                     ],

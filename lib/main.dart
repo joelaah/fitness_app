@@ -89,7 +89,7 @@ class FitnessApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Aura Fit',
+        title: 'PulseFit AI',
         theme: AppTheme.darkTheme,
         home: const MainScreen(),
       ),

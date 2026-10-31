@@ -1,6 +1,7 @@
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
-import 'package:fitness_app/features/workout/models/ai_recommendation.dart';
+import 'package:fitness_app/features/workout/bloc/ai_coach_bloc.dart';
+import 'package:fitness_app/features/workout/bloc/ai_coach_state.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/screens/ai_coach_screen.dart';
 import 'package:fitness_app/features/workout/services/rag_recommendation_service.dart';
@@ -8,62 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 /// Card widget displayed on the Home Screen showing latest AI Coach insights.
-class AiCoachCard extends StatefulWidget {
+/// Consumes the shared [AiCoachBloc] to eliminate duplicate startup API calls.
+class AiCoachCard extends StatelessWidget {
   const AiCoachCard({this.onTap, super.key});
   final VoidCallback? onTap;
 
-  @override
-  State<AiCoachCard> createState() => _AiCoachCardState();
-}
-
-class _AiCoachCardState extends State<AiCoachCard> {
-  final _service = RagRecommendationService();
-  AiRecommendation? _recommendation;
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCachedOrFetch();
-  }
-
-  Future<void> _loadCachedOrFetch() async {
-    final cached = _service.getCachedRecommendation();
-    if (cached != null) {
-      setState(() {
-        _recommendation = cached;
-      });
-      return;
-    }
-
-    final provider = context.read<WorkoutProvider>();
-    final sessions = provider.historyRepository.getAll();
-    if (sessions.isEmpty) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final rec = await _service.getRecommendations(sessions: sessions);
-      if (mounted) {
-        setState(() {
-          _recommendation = rec;
-          _isLoading = false;
-        });
-      }
-    } on Exception catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _openAiCoach() {
-    if (widget.onTap != null) {
-      widget.onTap!();
+  void _openAiCoach(BuildContext context) {
+    if (onTap != null) {
+      onTap!();
     } else {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -79,11 +32,22 @@ class _AiCoachCardState extends State<AiCoachCard> {
     final provider = context.watch<WorkoutProvider>();
     final hasWorkouts = provider.historyRepository.getAll().isNotEmpty;
 
+    AiCoachState? coachState;
+    try {
+      coachState = context.watch<AiCoachBloc>().state;
+    } catch (_) {
+      // Gracefully handle contexts where AiCoachBloc is omitted (e.g., unit/widget tests)
+    }
+
+    final isLoading = coachState?.isLoading ?? false;
+    final recommendation = coachState?.recommendation ??
+        RagRecommendationService().getCachedRecommendation();
+
     String headlineText;
-    if (_isLoading) {
+    if (isLoading) {
       headlineText = 'Synthesizing training volume & exercise science...';
-    } else if (_recommendation != null) {
-      final rec = _recommendation!;
+    } else if (recommendation != null) {
+      final rec = recommendation;
       final nextTitle = rec.nextWorkout.title;
       final topRecommendation = rec.recommendations.isNotEmpty
           ? rec.recommendations.first.description
@@ -91,14 +55,14 @@ class _AiCoachCardState extends State<AiCoachCard> {
       headlineText = '$topRecommendation Next up: $nextTitle.';
     } else if (!hasWorkouts) {
       headlineText =
-          'Welcome to Aura Fit! Ask any fitness question or tap to see your evidence-based starter workout.';
+          'Welcome to PulseFit AI! Ask any fitness question or tap to see your evidence-based starter workout.';
     } else {
       headlineText =
           'Ready for an evidence-based workout analysis? Get your personalized training & recovery plan.';
     }
 
     return ElevatedCard(
-      onTap: _openAiCoach,
+      onTap: () => _openAiCoach(context),
       padding: const EdgeInsets.all(20),
       hasGlow: true,
       glowColor: AppColors.primary,
@@ -166,7 +130,7 @@ class _AiCoachCardState extends State<AiCoachCard> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: _openAiCoach,
+              onPressed: () => _openAiCoach(context),
               icon: const Icon(Icons.chat_bubble_outline, size: 16),
               label: const Text(
                 'Chat with AI Coach',

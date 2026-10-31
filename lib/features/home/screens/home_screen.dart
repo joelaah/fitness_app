@@ -2,6 +2,7 @@ import 'package:fitness_app/core/math/fitness_math.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/empty_state_widget.dart';
+import 'package:fitness_app/core/widgets/perspective_tilt_card.dart';
 import 'package:fitness_app/features/auth/widgets/guest_expiration_banner.dart';
 import 'package:fitness_app/features/nutrition/screens/food_scanner_screen.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
@@ -32,7 +33,18 @@ class HomeScreen extends StatelessWidget {
     final currentStreak = consistency.currentStreak;
     final workoutsThisWeek = consistency.workoutsThisWeek;
 
+    final hour = DateTime.now().hour;
+    final String greeting;
+    if (hour < 12) {
+      greeting = 'Good morning,';
+    } else if (hour < 17) {
+      greeting = 'Good afternoon,';
+    } else {
+      greeting = 'Good evening,';
+    }
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -42,7 +54,7 @@ class HomeScreen extends StatelessWidget {
               const GuestExpirationBanner(),
               const SizedBox(height: 8),
               Text(
-                'Good morning,',
+                greeting,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -58,81 +70,88 @@ class HomeScreen extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedCard(
-                      padding: const EdgeInsets.all(20),
-                      hasGlow: true,
+                    child: PerspectiveTiltCard(
+                      borderRadius: 20,
                       glowColor: AppColors.primary,
-                      borderGradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0x8000E676),
-                          Color(0x3300E676),
-                          Color(0x1800E676),
-                          Color(0x22334155),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.local_fire_department,
-                              color: AppColors.primary,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              '$currentStreak',
-                              style: theme.textTheme.displaySmall?.copyWith(
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.textPrimary,
-                                letterSpacing: -1.0,
-                                fontFeatures: const [FontFeature.tabularFigures()],
+                      child: ElevatedCard(
+                        padding: const EdgeInsets.all(20),
+                        hasGlow: true,
+                        glowColor: AppColors.primary,
+                        borderGradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0x8000E676),
+                            Color(0x3300E676),
+                            Color(0x1800E676),
+                            Color(0x22334155),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.local_fire_department,
+                                color: AppColors.primary,
+                                size: 24,
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Day Streak',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.6,
+                            const SizedBox(height: 14),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '$currentStreak',
+                                style: theme.textTheme.displaySmall?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -1.0,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              'Day Streak',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedCard(
-                      padding: const EdgeInsets.all(20),
-                      hasGlow: true,
+                    child: PerspectiveTiltCard(
+                      borderRadius: 20,
                       glowColor: AppColors.secondaryAccent,
-                      borderGradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0x803B82F6),
-                          Color(0x3306B6D4),
-                          Color(0x183B82F6),
-                          Color(0x22334155),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                      child: ElevatedCard(
+                        padding: const EdgeInsets.all(20),
+                        hasGlow: true,
+                        glowColor: AppColors.secondaryAccent,
+                        borderGradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0x803B82F6),
+                            Color(0x3306B6D4),
+                            Color(0x183B82F6),
+                            Color(0x22334155),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -173,7 +192,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
               ),
 
               const SizedBox(height: 24),

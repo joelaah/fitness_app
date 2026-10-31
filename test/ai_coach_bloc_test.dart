@@ -36,7 +36,10 @@ class FakeRagRecommendationService extends RagRecommendationService {
   }
 
   @override
-  Future<Map<String, dynamic>> sendChatMessage(String message) async {
+  Future<Map<String, dynamic>> sendChatMessage(
+    String message, {
+    List<Map<String, String>>? history,
+  }) async {
     if (chatException != null) {
       throw chatException!;
     }
@@ -60,7 +63,7 @@ void main() {
       expect(bloc.state.recommendation, isNull);
       expect(bloc.state.messages.length, 1);
       expect(bloc.state.messages.first.role, 'assistant');
-      expect(bloc.state.messages.first.text, contains('Aura AI Coach'));
+      expect(bloc.state.messages.first.text, contains('PulseFit AI Coach'));
       expect(bloc.state.isSending, isFalse);
       expect(bloc.state.errorMessage, isNull);
 

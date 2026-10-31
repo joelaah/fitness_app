@@ -27,7 +27,10 @@ class _FakeRagService extends RagRecommendationService {
   final Exception? chatException;
 
   @override
-  Future<Map<String, dynamic>> sendChatMessage(String message) async {
+  Future<Map<String, dynamic>> sendChatMessage(
+    String message, {
+    List<Map<String, String>>? history,
+  }) async {
     if (chatException != null) {
       throw chatException!;
     }

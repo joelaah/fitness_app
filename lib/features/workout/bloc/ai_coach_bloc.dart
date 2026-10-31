@@ -119,13 +119,21 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
       sources: const [],
     );
 
+    final historyPayload = state.messages
+        .where((m) => !m.isError && m.text.trim().isNotEmpty)
+        .map((m) => {
+              'role': m.role,
+              'content': m.text,
+            })
+        .toList();
+
     emit(state.copyWith(
       messages: [...state.messages, userMessage],
       isSending: true,
     ));
 
     try {
-      final res = await _service.sendChatMessage(text);
+      final res = await _service.sendChatMessage(text, history: historyPayload);
       final reply =
           res['reply'] as String? ?? 'Keep up your consistent training!';
       final rawSources = res['sources'] as List<dynamic>? ?? [];

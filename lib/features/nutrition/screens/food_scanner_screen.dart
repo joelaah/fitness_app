@@ -1,16 +1,16 @@
 import 'dart:typed_data';
-import 'package:file_picker/file_picker.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/widgets/elevated_card.dart';
 import 'package:fitness_app/core/widgets/primary_button.dart';
 import 'package:fitness_app/features/nutrition/models/daily_macro_summary.dart';
-import 'package:fitness_app/features/nutrition/screens/macro_calculator_screen.dart';
 import 'package:fitness_app/features/nutrition/models/nutrition_analysis_result.dart';
+import 'package:fitness_app/features/nutrition/screens/macro_calculator_screen.dart';
 import 'package:fitness_app/features/nutrition/services/nutrition_service.dart';
 import 'package:fitness_app/features/nutrition/widgets/food_scanner_overlay.dart';
 import 'package:fitness_app/features/nutrition/widgets/macro_target_card.dart';
 import 'package:fitness_app/features/nutrition/widgets/meal_review_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// Visual AI Food Scanner screen for PulseFit.
 /// Features a futuristic scanning viewfinder, real-time laser/radar animation,
@@ -65,18 +65,75 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
       _errorMessage = null;
     });
 
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Scan Meal Photo',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+                ),
+                title: const Text('Take Photo', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Capture with device camera', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
+                ),
+                title: const Text('Choose from Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Pick existing meal photo', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
     try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
-        withData: true,
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
       );
 
-      if (result == null || result.files.isEmpty) return;
+      if (pickedFile == null) return;
 
-      final file = result.files.first;
-      final bytes = file.bytes;
-      if (bytes == null || bytes.isEmpty) {
+      final bytes = await pickedFile.readAsBytes();
+      if (bytes.isEmpty) {
         setState(() {
           _errorMessage = 'Could not read image bytes.';
         });
@@ -85,14 +142,14 @@ class _FoodScannerScreenState extends State<FoodScannerScreen> {
 
       setState(() {
         _selectedImageBytes = bytes;
-        _selectedImageName = file.name;
+        _selectedImageName = pickedFile.name;
       });
 
       // Automatically trigger multimodal scanning analysis
       await _startAnalysis();
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error picking image: $e';
+        _errorMessage = 'Error capturing or selecting image: $e';
       });
     }
   }

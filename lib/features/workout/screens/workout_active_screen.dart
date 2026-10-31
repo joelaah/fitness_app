@@ -9,6 +9,7 @@ import 'package:fitness_app/features/workout/models/workout_session.dart';
 import 'package:fitness_app/features/workout/providers/workout_provider.dart';
 import 'package:fitness_app/features/workout/widgets/workout_summary_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class WorkoutActiveScreen extends StatefulWidget {
@@ -526,10 +527,13 @@ class _WorkoutActiveScreenState extends State<WorkoutActiveScreen> {
                                 const SizedBox(width: 8),
                                 // Complete checkmark with glowing tactile response
                                 GestureDetector(
-                                  onTap: () => provider.toggleSetComplete(
-                                    sessionEx.id,
-                                    set.id,
-                                  ),
+                                  onTap: () {
+                                    HapticFeedback.mediumImpact();
+                                    provider.toggleSetComplete(
+                                      sessionEx.id,
+                                      set.id,
+                                    );
+                                  },
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
                                     decoration: BoxDecoration(
@@ -734,25 +738,9 @@ class _WorkoutActiveScreenState extends State<WorkoutActiveScreen> {
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             )
-          : TextFormField(
-              initialValue: value,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: AppColors.textPrimary,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-                hintText: hint,
-                hintStyle: const TextStyle(color: AppColors.textSecondary),
-              ),
+          : _AutoSelectInputBox(
+              value: value,
+              hint: hint,
               onChanged: onChanged,
             ),
     );
@@ -761,5 +749,96 @@ class _WorkoutActiveScreenState extends State<WorkoutActiveScreen> {
   Future<Map<String, Exercise>> _loadExercises() async {
     final exercises = await ExerciseService.loadExercises();
     return {for (final e in exercises) e.id: e};
+  }
+}
+
+class _AutoSelectInputBox extends StatefulWidget {
+  const _AutoSelectInputBox({
+    required this.value,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  final String value;
+  final String hint;
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_AutoSelectInputBox> createState() => _AutoSelectInputBoxState();
+}
+
+class _AutoSelectInputBoxState extends State<_AutoSelectInputBox> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      _selectAll();
+      // Ensure gesture recognizer tap positioning doesn't clear selection
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _focusNode.hasFocus) {
+          _selectAll();
+        }
+      });
+    }
+  }
+
+  void _selectAll() {
+    _controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _controller.text.length,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _AutoSelectInputBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value &&
+        widget.value != _controller.text &&
+        !_focusNode.hasFocus) {
+      _controller.text = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: _controller,
+      focusNode: _focusNode,
+      keyboardType: const TextInputType.numberWithOptions(
+        decimal: true,
+      ),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontWeight: FontWeight.w700,
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        fontFeatures: [FontFeature.tabularFigures()],
+      ),
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.zero,
+        isDense: true,
+        hintText: widget.hint,
+        hintStyle: const TextStyle(color: AppColors.textSecondary),
+      ),
+      onChanged: widget.onChanged,
+    );
   }
 }

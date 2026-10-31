@@ -4,6 +4,7 @@ import 'package:fitness_app/core/responsive/app_breakpoints.dart';
 import 'package:fitness_app/core/theme/app_colors.dart';
 import 'package:fitness_app/core/utils/web_splash_util.dart';
 import 'package:fitness_app/core/widgets/adaptive_navigation_rail.dart';
+import 'package:fitness_app/core/widgets/interactive_particle_field.dart';
 import 'package:fitness_app/features/auth/screens/login_screen.dart';
 import 'package:fitness_app/features/auth/services/auth_service.dart';
 import 'package:fitness_app/features/chat/bloc/chat_bloc.dart';
@@ -380,48 +381,50 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: isDesktop ? null : _buildHeaderAppBar(context),
-      body: isDesktop
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AdaptiveNavigationRail(
-                  selectedIndex: _selectedIndex,
-                  onDestinationSelected: (index) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  },
-                  isExtended: _isRailExtended,
-                  onToggleExtended: () {
-                    setState(() {
-                      _isRailExtended = !_isRailExtended;
-                    });
-                  },
-                  onOpenChat: () => _navigateToChat(context),
-                  onOpenPayments: () => _navigateToPayments(context),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      if (_buildHeaderAppBar(context) != null)
-                        _buildHeaderAppBar(context)!,
-                      Expanded(
-                        child: IndexedStack(
-                          key: _stackKey,
-                          index: _selectedIndex,
-                          children: _screens,
-                        ),
-                      ),
-                    ],
+      body: InteractiveParticleField(
+        child: isDesktop
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AdaptiveNavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: (index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    isExtended: _isRailExtended,
+                    onToggleExtended: () {
+                      setState(() {
+                        _isRailExtended = !_isRailExtended;
+                      });
+                    },
+                    onOpenChat: () => _navigateToChat(context),
+                    onOpenPayments: () => _navigateToPayments(context),
                   ),
-                ),
-              ],
-            )
-          : IndexedStack(
-              key: _stackKey,
-              index: _selectedIndex,
-              children: _screens,
-            ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        if (_buildHeaderAppBar(context) != null)
+                          _buildHeaderAppBar(context)!,
+                        Expanded(
+                          child: IndexedStack(
+                            key: _stackKey,
+                            index: _selectedIndex,
+                            children: _screens,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : IndexedStack(
+                key: _stackKey,
+                index: _selectedIndex,
+                children: _screens,
+              ),
+      ),
       bottomNavigationBar: isDesktop
           ? null
           : Container(
