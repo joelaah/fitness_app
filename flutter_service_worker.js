@@ -2686,7 +2686,7 @@ const RESOURCES = {"icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2e
 "assets/AssetManifest.bin.json": "80899db6fd275ee900e3042796d03393",
 "assets/NOTICES": "6327ad0f3ed81cd211d4a0e26a430b88",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
-"flutter_bootstrap.js": "00c98b6a080843e22dea3e62350dd354",
+"flutter_bootstrap.js": "80ed113239d7fc8ea0ef071f7fc96519",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "flutter.js": "83d881c1dbb6d6bcd6b42e274605b69c",
 "splash/img/dark-4x.png": "f2231da9061f4fa0497aec375a8bf9c7",

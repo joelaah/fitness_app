@@ -585,7 +585,7 @@ function initTerminal() {
 <div class="term-line">   • Live: <a href="https://joelaah.github.io/fitness_app/" target="_blank" class="term-accent">https://joelaah.github.io/fitness_app/</a></div>
 <br>
 <div class="term-line"><span class="term-cyan">2. JOB SeArCh</span> (Autonomous Semantic Career Engine)</div>
-<div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Grok LLM, Zero-Knowledge Vault</div>
+<div class="term-line">   • Stack: Flutter Web, FastAPI, Supabase pgvector (768d), Groq LPU / LLM, Zero-Knowledge Vault</div>
 <div class="term-line">   • Video Reel: 1080p full demo with neural AI voiceover in assets/demo_reel.mp4</div>
 <div class="term-line">   • Live: <a href="https://joelaah.github.io/Job-Searcher/" target="_blank" class="term-cyan">https://joelaah.github.io/Job-Searcher/</a></div>
 <br>
@@ -608,7 +608,7 @@ function initTerminal() {
     skills: () => `
 <div class="term-line"><span class="term-cyan">Languages:</span> Dart, Python 3.12, JavaScript (ES6+), SQL, HTML5/CSS3</div>
 <div class="term-line"><span class="term-cyan">Frontend:</span> Flutter (Web & Mobile), BLoC / Riverpod, CanvasKit, Glassmorphism UI</div>
-<div class="term-line"><span class="term-cyan">AI & Vector:</span> Grok LLM (Groq LPU), Supabase pgvector, Qdrant Cloud, Cohere Rerank v3.5, FastEmbed (768d), Gemini Flash</div>
+<div class="term-line"><span class="term-cyan">AI & Vector:</span> Groq LPU / LLM, Supabase pgvector, Qdrant Cloud, Cohere Rerank v3.5, FastEmbed (768d), Gemini Flash</div>
 <div class="term-line"><span class="term-cyan">Backend:</span> FastAPI, Pydantic v2, Uvicorn, SlowAPI, REST microservices</div>
 <div class="term-line"><span class="term-cyan">Databases:</span> PostgreSQL 15, HNSW cosine index, Firestore, HTML5 localStorage</div>
 <div class="term-line"><span class="term-cyan">Security:</span> Zero-Knowledge client-side RAM vaulting, Anti-SSRF crawler defense</div>`,
